@@ -1,0 +1,51 @@
+/* Footer.css */
+.app-footer {
+  background-color: #f8f8f8;
+  padding: 10px 0;
+  text-align: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.language-switcher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.language-switcher span {
+  margin: 0 10px;
+}
+
+.language-switcher button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 0 5px;
+  font-size: 14px;
+}
+
+.language-switcher button.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.app-footer.rtl {
+  direction: rtl;
+}
+
+.app-footer.rtl .language-switcher {
+  flex-direction: row-reverse;
+}
+
+.app-footer.rtl .language-switcher span {
+  margin: 0 10px;
+}
+
+.app-footer.rtl .language-switcher button {
+  margin: 0 5px;
+}

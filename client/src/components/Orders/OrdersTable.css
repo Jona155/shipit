@@ -1,0 +1,139 @@
+/* Add these styles to your existing CSS file */
+
+.rtl {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  .ltr {
+    direction: ltr;
+    text-align: left;
+  }
+  
+  .rtl .orders-table th,
+  .rtl .orders-table td {
+    text-align: right;
+  }
+  
+  .ltr .orders-table th,
+  .ltr .orders-table td {
+    text-align: left;
+  }
+
+  /* OrdersTable.css */
+.orders-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.orders-table-header {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  background-color: #e9ecef;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.tab.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #e9ecef;
+}
+
+.add-order-row {
+  position: sticky;
+  bottom: 0;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.add-order-button {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.add-order-button:hover {
+  background-color: #218838;
+}
+
+/* OrdersTable.css */
+/* ... (previous styles remain the same) ... */
+
+.build-route-button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background-color 0.3s ease;
+}
+
+.build-route-button:hover {
+  background-color: #0056b3;
+}
+
+.build-route-button.cancel {
+  background-color: #dc3545;
+}
+
+.build-route-button.cancel:hover {
+  background-color: #c82333;
+}
+
+.orders-table-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* ... (rest of the styles remain the same) ... */

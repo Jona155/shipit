@@ -1,0 +1,121 @@
+{  
+  "orders_title": "Orders Management",
+  "orders_accepted": "Accepted",
+  "orders_on_their_way": "On Their Way",
+  "orders_finished": "Finished",
+  "orders_new": "New Order",
+  "orders_assign": "Assign Selected Orders",
+  "orders_finish": "Finish",
+  "orders_unassign": "Unassign",
+  "orders_return": "Return to Route",
+  
+  "users_title": "Users Management",
+  "users_new": "New User",
+  "users_name": "Name",
+  "users_email": "Email",
+  "users_role": "Role",
+  "users_availability": "Availability",
+  "users_actions": "Actions",
+  "users_edit": "Edit",
+  "users_delete": "Delete",
+  
+  "analytics_title": "Analytics Dashboard",
+  "analytics_today_orders": "Today's Orders",
+  "analytics_weekly_chart": "Average Orders by Day of Week",
+  
+  "settings_business_name": "Business Name",
+  "settings_business_address": "Business Address",
+  "settings_business_phone": "Business Phone",
+  "settings_save": "Save Settings",
+  "settings_saved": "Settings saved successfully!",
+
+  "orders_select": "Select",
+  "orders_id": "Order ID",
+  "orders_customer": "Customer",
+  "orders_address": "Address",
+  "orders_items": "Items",
+  "orders_status": "Status",
+  "orders_courier": "Courier",
+  "orders_action": "Action",
+  "orders_finish_route": "Finish Route",
+  "orders_unassigned": "Unassigned",
+
+  "assign_courier": "Assign Courier",
+  "select_courier": "Select a courier",
+  "assign": "Assign",
+  "cancel": "Cancel",
+
+  "user_name_placeholder": "Name",
+  "user_email_placeholder": "Email",
+  "user_role_courier": "Courier",
+  "user_role_dispatcher": "Dispatcher",
+  "update_user": "Update User",
+  "add_user": "Add User",
+
+  "user_name": "Name",
+  "user_email": "Email",
+  "user_role": "Role",
+  "user_availability": "Availability",
+  "user_actions": "Actions",
+  "courier": "Courier",
+  "dispatcher": "Dispatcher",
+  "in_shift": "In Shift",
+  "out_of_shift": "Out of Shift",
+  "edit": "Edit",
+  "delete": "Delete",
+
+
+  "users_management": "Users Management",
+  "new_user": "New User",
+
+  "app_title": "Dispatcher App",
+  "nav_orders": "Orders",
+  "nav_users": "Users",
+  "nav_analytics": "Analytics",
+  "nav_settings": "Settings",
+
+  "analytics_dashboard": "Analytics Dashboard",
+  "todays_orders": "Today's Orders",
+  "average_orders": "Average Orders",
+  "average_orders_by_day": "Average Orders by Day of Week",
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+
+  "footer_language": "Language",
+  "language_english": "English",
+  "language_hebrew": "Hebrew",
+
+  "home_title": "Dispatcher Dashboard",
+  "uk_flag_alt": "UK Flag",
+  "israel_flag_alt": "Israel Flag",
+
+  "select_orders_to_assign": "Please select at least one order to assign.",
+  "orders_assigned_success": "Orders assigned successfully to courier!",
+  "order_marked_finished": "Order marked as finished!",
+  "route_orders_finished": "All orders in the route marked as finished!",
+  "order_unassigned": "Order unassigned and returned to Accepted!",
+  "order_returned_to_way": "Order returned to On Their Way!",
+
+  "new_order": "New Order",
+  "order_customer": "Customer Name",
+  "order_address": "Delivery Address",
+  "order_items": "Order Items",
+  "add_order": "Add Order",
+  "add_new_order": "Add New Order",
+  "order_added_success": "New order added successfully!",
+
+
+  "search_orders": "Search orders...",
+
+  "switch_to_map": "Switch to Map View",
+  "switch_to_table": "Switch to Table View",
+
+  "build_route": "Build New Route",
+  "cancel_build_route": "Cancel Route Planning"
+
+}

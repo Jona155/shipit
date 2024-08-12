@@ -1,0 +1,119 @@
+/* Modern Minimalist Design */
+
+/* OrderActions.css */
+.order-actions {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.order-action-button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.order-action-button:hover {
+  background-color: #e0e0e0;
+}
+
+.search-input {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.75rem;
+  width: 100%;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab {
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  color: #666;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.tab.active {
+  color: #333;
+  border-bottom: 2px solid #333;
+}
+
+/* CourierAssignment.css (Modal) */
+.modal-overlay {
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.courier-search,
+.courier-dropdown {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.75rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.assign-button,
+.cancel-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.assign-button {
+  background-color: #333;
+  color: #fff;
+}
+
+.cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* OrdersTable.css */
+.orders-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 1rem;
+  background-color: #fff;
+  border: none;
+}
+
+.orders-table th {
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.orders-table tr {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.orders-table tr:hover {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
