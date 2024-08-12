@@ -7,7 +7,7 @@ const UserForm = ({ onSubmit, initialData, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'Courier',
+    role: 'blabla',
     availability: 'Out of Shift'
   });
 
