@@ -1,11 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Package, Users, BarChart, Settings } from 'lucide-react';
 import './HomePage.css';
+import axios from 'axios';
+
 
 const HomePage = () => {
   const { t, i18n } = useTranslation();
+  const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    const fetchGreeting = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:5000/api/greeting');
+        setGreeting(response.data.message);
+      } catch (error) {
+        console.error('Error fetching greeting:', error);
+        setGreeting('Failed to load greeting');
+      }
+    };
+
+    fetchGreeting();
+  }, []);
 
   const isRTL = i18n.language === 'he';
 
@@ -24,6 +41,7 @@ const HomePage = () => {
         </div>
       </header>
       <main className="main-content">
+        <h2>{greeting}</h2>
         <div className="nav-grid">
           {navItems.map((item, index) => (
             <Link key={index} to={item.path} className="nav-item">
