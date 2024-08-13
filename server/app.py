@@ -1,13 +1,9 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 
-app = Flask(__name__)
-CORS(app)  # We'll adjust this for Heroku
-
-@app.route('/', methods=['GET'])
-def root():
-    return jsonify({"message": "Welcome to the Flask backend!"}), 200
+app = Flask(__name__, static_folder='../client/build', static_url_path='')
+CORS(app)
 
 @app.route('/api/greeting', methods=['GET'])
 def greeting():
@@ -16,6 +12,14 @@ def greeting():
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy"}), 200
+
+@app.route('/')
+def serve():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file('index.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
