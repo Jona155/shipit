@@ -1,8 +1,8 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 import os
 
-app = Flask(__name__, static_folder='../client/build', static_url_path='')
+app = Flask(__name__, static_folder='../client/build')
 CORS(app)
 
 @app.route('/api/greeting', methods=['GET'])
@@ -13,14 +13,13 @@ def greeting():
 def health_check():
     return jsonify({"status": "healthy"}), 200
 
-@app.route('/')
-def serve():
-    return send_from_directory(app.static_folder, 'index.html')
-
-@app.errorhandler(404)
-def not_found(e):
-    return app.send_static_file('index.html')
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(use_reloader=True, port=5000, threaded=True)
