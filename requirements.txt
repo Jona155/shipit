@@ -30,5 +30,3 @@ urllib3==2.2.2
 Werkzeug==2.2.3
 wheel==0.42.0
 yarl==1.9.4
-Flask==2.2.5
-gunicorn==23.0.0
