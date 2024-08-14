@@ -6,8 +6,8 @@
       "node": "14.x"
     },
     "scripts": {
-      "start": "cd server && gunicorn app:app",
-      "heroku-postbuild": "cd client && npm install && npm run build"
-    },
+        "start": "python server/app.py",
+        "heroku-postbuild": "cd client && npm install && npm run build"
+      },
     "cacheDirectories": ["client/node_modules"]
   }
