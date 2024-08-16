@@ -114,6 +114,8 @@
   "switch_to_table": "טבלת הזמנות",
 
   "build_route": "תכנן מסלול חדש",
-  "cancel_build_route": "בטל תכנון מסלול"
+  "cancel_build_route": "בטל תכנון מסלול", 
+
+  "search_users": "חפש משתמש קיים..."
 
 }

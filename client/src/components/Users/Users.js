@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import UserList from './UserList';
 import UserForm from './UserForm';
@@ -15,6 +15,7 @@ const Users = () => {
   const [users, setUsers] = useState(initialUsers);
   const [editingUser, setEditingUser] = useState(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const isRTL = i18n.language === 'he';
 
@@ -58,12 +59,32 @@ const Users = () => {
     setEditingUser(null);
   };
 
+  const handleSearchChange = useCallback((event) => {
+    setSearchTerm(event.target.value.toLowerCase());
+  }, []);
+
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm) ||
+    user.email.toLowerCase().includes(searchTerm)
+  );
+
   return (
     <div className={`users-container ${isRTL ? 'rtl' : 'ltr'}`}>
       <h1>{t('users_management')}</h1>
-      <button onClick={handleNewUser} className="new-user-button">{t('new_user')}</button>
+      <div className="users-actions">
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder={t('search_users')}
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+        </div>
+        <button onClick={handleNewUser} className="new-user-button">{t('new_user')}</button>
+      </div>
       <UserList 
-        users={users} 
+        users={filteredUsers} 
         onEdit={handleEdit} 
         onDelete={deleteUser}
         onToggleAvailability={toggleAvailability}

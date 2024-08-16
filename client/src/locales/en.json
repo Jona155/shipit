@@ -116,6 +116,9 @@
   "switch_to_table": "Switch to Table View",
 
   "build_route": "Build New Route",
-  "cancel_build_route": "Cancel Route Planning"
+  "cancel_build_route": "Cancel Route Planning",
+
+  "search_users": "Search Existing User.."
+
 
 }
