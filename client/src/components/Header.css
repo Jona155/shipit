@@ -11,7 +11,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: nowrap;
 }
 
 .app-title {
@@ -30,17 +29,11 @@
   color: #3498db;
 }
 
-.main-nav {
-  display: flex;
-  align-items: center;
-}
-
 .main-nav ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
   display: flex;
-  flex-wrap: nowrap;
 }
 
 .main-nav li {
@@ -52,7 +45,6 @@
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
-  white-space: nowrap;
 }
 
 .main-nav a:hover {
@@ -60,12 +52,12 @@
 }
 
 .menu-toggle {
-  display: none;
   background: none;
   border: none;
   color: white;
   font-size: 1.5rem;
   cursor: pointer;
+  padding: 0;
 }
 
 /* RTL styles */
@@ -85,48 +77,33 @@
   margin: 0 1rem 0 0;
 }
 
+/* LTR styles */
+.app-header.ltr .header-content {
+  flex-direction: row;
+}
+
 /* Responsive styles */
 @media screen and (max-width: 768px) {
   .header-content {
-    flex-direction: column;
-    align-items: stretch;
+    justify-content: center;
+    position: relative;
   }
 
-  .main-nav {
-    width: 100%;
-    display: none;
+  .app-title {
+    text-align: center;
   }
 
-  .main-nav.active {
-    display: flex;
+  .header-left {
+    position: absolute;
+    left: 0;
   }
 
-  .main-nav ul {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .main-nav li {
-    margin: 0.5rem 0;
+  .app-header.rtl .header-left {
+    left: auto;
+    right: 0;
   }
 
   .menu-toggle {
-    display: block;
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-  }
-
-  .app-header.rtl .menu-toggle {
-    right: auto;
-    left: 1rem;
-  }
-
-  .app-header.rtl .main-nav ul {
-    align-items: flex-start;
-  }
-
-  .app-header.rtl .main-nav li {
-    text-align: right;
+    padding: 0.5rem;
   }
 }

@@ -1,8 +1,8 @@
 {
   "orders_title": "ניהול הזמנות",
-  "orders_accepted": "התקבלו",
-  "orders_on_their_way": "בדרך",
-  "orders_finished": "הסתיימו",
+  "accepted": "התקבלו",
+  "on_their way": "בדרך",
+  "finished": "הסתיימו",
   "orders_new": "הזמנה חדשה",
   "orders_assign": "שייך הזמנות נבחרות",
   "orders_finish": "סיים",
@@ -115,4 +115,5 @@
 
   "build_route": "תכנן מסלול חדש",
   "cancel_build_route": "בטל תכנון מסלול"
+
 }

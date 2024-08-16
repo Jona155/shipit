@@ -53,6 +53,11 @@ const Users = () => {
     setIsFormVisible(true);
   };
 
+  const handleCloseForm = () => {
+    setIsFormVisible(false);
+    setEditingUser(null);
+  };
+
   return (
     <div className={`users-container ${isRTL ? 'rtl' : 'ltr'}`}>
       <h1>{t('users_management')}</h1>
@@ -63,13 +68,16 @@ const Users = () => {
         onDelete={deleteUser}
         onToggleAvailability={toggleAvailability}
       />
-      <div className={`side-panel ${isFormVisible ? 'visible' : ''}`}>
-        <button onClick={() => setIsFormVisible(false)} className="close-panel">×</button>
-        <UserForm 
-          onSubmit={editingUser ? updateUser : addUser} 
-          initialData={editingUser} 
-        />
-      </div>
+      {isFormVisible && (
+        <div className="side-panel visible">
+          <button onClick={handleCloseForm} className="close-panel">×</button>
+          <UserForm 
+            onSubmit={editingUser ? updateUser : addUser} 
+            initialData={editingUser} 
+            onClose={handleCloseForm}
+          />
+        </div>
+      )}
     </div>
   );
 };

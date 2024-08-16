@@ -39,43 +39,14 @@
   right: 0;
 }
 
-.user-list {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.user-list th,
-.user-list td {
-  border: 1px solid #ddd;
-  padding: 12px;
-  text-align: left;
-}
-
-.user-list th {
-  background-color: #f2f2f2;
-}
-
-.user-list button {
-  margin-right: 5px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.availability-toggle {
-  padding: 5px 10px;
+.close-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
   border: none;
-  border-radius: 4px;
+  font-size: 24px;
   cursor: pointer;
-}
-
-.availability-toggle.in-shift {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.availability-toggle.out-of-shift {
-  background-color: #f44336;
-  color: white;
 }
 
 /* RTL Styles */
@@ -92,4 +63,126 @@
 .users-container.rtl .side-panel.visible {
   right: auto;
   left: 0;
+}
+
+.users-container.rtl .close-panel {
+  right: auto;
+  left: 10px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .users-container {
+    padding: 10px;
+  }
+
+  .side-panel {
+    width: 100%;
+    right: -100%;
+  }
+
+  .side-panel.visible {
+    right: 0;
+  }
+
+  .users-container.rtl .side-panel {
+    left: -100%;
+  }
+
+  .users-container.rtl .side-panel.visible {
+    left: 0;
+  }
+
+  .new-user-button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+  }
+}
+
+/* Users.css */
+/* ... (keep the existing styles) ... */
+
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100%;
+  background-color: #f8f8f8;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease-in-out;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.side-panel.visible {
+  right: 0;
+}
+
+.close-panel {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* RTL Styles */
+.users-container.rtl .side-panel {
+  right: auto;
+  left: -400px;
+}
+
+.users-container.rtl .side-panel.visible {
+  right: auto;
+  left: 0;
+}
+
+.users-container.rtl .close-panel {
+  right: auto;
+  left: 10px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .side-panel {
+    width: 100%;
+    right: -100%;
+  }
+
+  .side-panel.visible {
+    right: 0;
+  }
+
+  .users-container.rtl .side-panel {
+    left: -100%;
+  }
+
+  .users-container.rtl .side-panel.visible {
+    left: 0;
+  }
+
+  .close-panel {
+    top: 10px;
+    right: 10px;
+  }
+
+  .users-container.rtl .close-panel {
+    right: auto;
+    left: 10px;
+  }
 }

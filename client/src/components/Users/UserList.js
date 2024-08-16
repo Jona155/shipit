@@ -20,10 +20,10 @@ const UserList = ({ users, onEdit, onDelete, onToggleAvailability }) => {
       <tbody>
         {users.map(user => (
           <tr key={user.id}>
-            <td>{user.name}</td>
-            <td>{user.email}</td>
-            <td>{t(user.role)}</td>
-            <td>
+            <td data-label={t('user_name')}>{user.name}</td>
+            <td data-label={t('user_email')}>{user.email}</td>
+            <td data-label={t('user_role')}>{t(user.role)}</td>
+            <td data-label={t('user_availability')}>
               <button 
                 onClick={() => onToggleAvailability(user.id)}
                 className={`availability-toggle ${user.availability}`}
@@ -31,7 +31,7 @@ const UserList = ({ users, onEdit, onDelete, onToggleAvailability }) => {
                 {t(user.availability)}
               </button>
             </td>
-            <td>
+            <td data-label={t('user_actions')}>
               <button onClick={() => onEdit(user)}>{t('edit')}</button>
               <button onClick={() => onDelete(user.id)}>{t('delete')}</button>
             </td>

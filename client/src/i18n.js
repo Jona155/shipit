@@ -13,8 +13,8 @@ export const initI18n = () => {
     .use(initReactI18next)
     .init({
       resources,
-      lng: 'en', // Default language
-      fallbackLng: 'en',
+      lng: 'he', // Default language
+      fallbackLng: 'he',
       interpolation: {
         escapeValue: false,
       },

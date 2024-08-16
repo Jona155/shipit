@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import './Settings.css';
 
 const Settings = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [settings, setSettings] = useState({
     businessName: '',
     businessAddress: '',
@@ -11,6 +11,7 @@ const Settings = () => {
   });
 
   const [isSaved, setIsSaved] = useState(false);
+  const isRTL = i18n.language === 'he';
 
   useEffect(() => {
     const savedSettings = localStorage.getItem('businessSettings');
@@ -35,7 +36,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="settings-container">
+    <div className={`settings-container ${isRTL ? 'rtl' : ''}`}>
       <h1>{t('nav_settings')}</h1>
       <form onSubmit={handleSubmit} className="settings-form">
         <div className="form-group">

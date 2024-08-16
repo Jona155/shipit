@@ -36,12 +36,12 @@ const HomePage = () => {
   return (
     <div className={`home-page ${isRTL ? 'rtl' : 'ltr'}`}>
       <header className="header">
-        <div className="header-content">
+        {/* <div className="header-content">
           <h1 className="header-title">{t('home_title')}</h1>
-        </div>
+        </div> */}
       </header>
+      {/* <h2>{greeting}</h2> */}
       <main className="main-content">
-        <h2>{greeting}</h2>
         <div className="nav-grid">
           {navItems.map((item, index) => (
             <Link key={index} to={item.path} className="nav-item">
