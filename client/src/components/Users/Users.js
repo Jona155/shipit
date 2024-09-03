@@ -23,7 +23,7 @@ const Users = () => {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/users/business/${businessId}`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/business/${businessId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch users');
         }
