@@ -10,7 +10,7 @@ const BusinessList = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/api/businesses')
+    fetch(`${process.env.REACT_APP_API_URL}/api/businesses`)
       .then(response => {
         if (!response.ok) {
           return response.text().then(text => {
