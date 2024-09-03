@@ -1,47 +1,98 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 import UserList from './UserList';
 import UserForm from './UserForm';
 import './Users.css';
 
-// Mock initial user data
-const initialUsers = [
-  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'courier', availability: 'in_shift' },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'dispatcher', availability: 'out_of_shift' },
-];
+const API_BASE_URL = 'http://127.0.0.1:5000';
 
 const Users = () => {
   const { t, i18n } = useTranslation();
-  const [users, setUsers] = useState(initialUsers);
+  const { businessId } = useParams();
+  const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const isRTL = i18n.language === 'he';
 
-  const addUser = (user) => {
-    setUsers([...users, { ...user, id: Date.now() }]);
-    setIsFormVisible(false);
-  };
-
-  const updateUser = (updatedUser) => {
-    setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
-    setEditingUser(null);
-    setIsFormVisible(false);
-  };
-
-  const deleteUser = (userId) => {
-    setUsers(users.filter(user => user.id !== userId));
-  };
-
-  const toggleAvailability = (userId) => {
-    setUsers(users.map(user => {
-      if (user.id === userId) {
-        const newAvailability = user.availability === 'in_shift' ? 'out_of_shift' : 'in_shift';
-        return { ...user, availability: newAvailability };
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users/business/${businessId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        setUsers(data);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
       }
-      return user;
-    }));
+    };
+
+    fetchUsers();
+  }, [businessId]);
+
+  const addUser = (user) => {
+    // TODO: Implement user addition via API
+    setUsers([...users, { ...user, uid: Date.now().toString() }]);
+    setIsFormVisible(false);
+  };
+
+  const updateUser = async (updatedUser) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/update/${updatedUser.uid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedUser),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update user');
+      }
+
+      setUsers(users.map(user => user.uid === updatedUser.uid ? updatedUser : user));
+      setEditingUser(null);
+      setIsFormVisible(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/delete/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
+      }
+
+      setUsers(users.filter(user => user.uid !== userId));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const toggleAvailability = async (userId) => {
+    const user = users.find(u => u.uid === userId);
+    if (user && user.type === 'messenger') {
+      const updatedUser = { 
+        ...user, 
+        isCurrentlyOnShift: !user.isCurrentlyOnShift 
+      };
+      await updateUser(updatedUser);
+    }
   };
 
   const handleEdit = (user) => {
@@ -65,8 +116,11 @@ const Users = () => {
 
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm) ||
-    user.email.toLowerCase().includes(searchTerm)
+    (user.phoneNumber && user.phoneNumber.toLowerCase().includes(searchTerm))
   );
+
+  if (isLoading) return <div>{t('loading')}</div>;
+  if (error) return <div>{t('error')}: {error}</div>;
 
   return (
     <div className={`users-container ${isRTL ? 'rtl' : 'ltr'}`}>

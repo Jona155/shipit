@@ -11,29 +11,31 @@ const UserList = ({ users, onEdit, onDelete, onToggleAvailability }) => {
       <thead>
         <tr>
           <th>{t('user_name')}</th>
-          <th>{t('user_email')}</th>
-          <th>{t('user_role')}</th>
+          <th>{t('user_phone')}</th>
+          <th>{t('user_type')}</th>
           <th>{t('user_availability')}</th>
           <th>{t('user_actions')}</th>
         </tr>
       </thead>
       <tbody>
         {users.map(user => (
-          <tr key={user.id}>
+          <tr key={user.uid}>
             <td data-label={t('user_name')}>{user.name}</td>
-            <td data-label={t('user_email')}>{user.email}</td>
-            <td data-label={t('user_role')}>{t(user.role)}</td>
+            <td data-label={t('user_phone')}>{user.phoneNumber}</td>
+            <td data-label={t('user_type')}>{t(user.type)}</td>
             <td data-label={t('user_availability')}>
-              <button 
-                onClick={() => onToggleAvailability(user.id)}
-                className={`availability-toggle ${user.availability}`}
-              >
-                {t(user.availability)}
-              </button>
+              {user.type === 'messenger' && (
+                <button 
+                  onClick={() => onToggleAvailability(user.uid)}
+                  className={`availability-toggle ${user.isCurrentlyOnShift ? 'in_shift' : 'out_of_shift'}`}
+                >
+                  {t(user.isCurrentlyOnShift ? 'in_shift' : 'out_of_shift')}
+                </button>
+              )}
             </td>
             <td data-label={t('user_actions')}>
               <button onClick={() => onEdit(user)}>{t('edit')}</button>
-              <button onClick={() => onDelete(user.id)}>{t('delete')}</button>
+              <button onClick={() => onDelete(user.uid)}>{t('delete')}</button>
             </td>
           </tr>
         ))}

@@ -6,9 +6,9 @@ const UserForm = ({ onSubmit, initialData, onClose }) => {
   const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    role: 'Courier',
-    availability: 'Out of Shift'
+    phoneNumber: '',
+    type: 'messenger',
+    isCurrentlyOnShift: false
   });
 
   useEffect(() => {
@@ -17,29 +17,24 @@ const UserForm = ({ onSubmit, initialData, onClose }) => {
     } else {
       setFormData({
         name: '',
-        email: '',
-        role: 'Courier',
-        availability: 'Out of Shift'
+        phoneNumber: '',
+        type: 'messenger',
+        isCurrentlyOnShift: false
       });
     }
   }, [initialData]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ 
+      ...formData, 
+      [name]: type === 'checkbox' ? checked : value 
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
-    if (!initialData) {
-      setFormData({
-        name: '',
-        email: '',
-        role: 'Courier',
-        availability: 'Out of Shift'
-      });
-    }
   };
 
   const isRTL = i18n.language === 'he';
@@ -57,24 +52,35 @@ const UserForm = ({ onSubmit, initialData, onClose }) => {
           className="form-input"
         />
         <input
-          type="email"
-          name="email"
-          value={formData.email}
+          type="tel"
+          name="phoneNumber"
+          value={formData.phoneNumber}
           onChange={handleChange}
-          placeholder={t('user_email_placeholder')}
+          placeholder={t('user_phone_placeholder')}
           required
           className="form-input"
         />
         <select
-          name="role"
-          value={formData.role}
+          name="type"
+          value={formData.type}
           onChange={handleChange}
           required
           className="form-select"
         >
-          <option value="Courier">{t('user_role_courier')}</option>
-          <option value="Dispatcher">{t('user_role_dispatcher')}</option>
+          <option value="messenger">{t('user_type_messenger')}</option>
+          <option value="dispatcher">{t('user_type_dispatcher')}</option>
         </select>
+        {formData.type === 'messenger' && (
+          <label>
+            <input
+              type="checkbox"
+              name="isCurrentlyOnShift"
+              checked={formData.isCurrentlyOnShift}
+              onChange={handleChange}
+            />
+            {t('user_is_on_shift')}
+          </label>
+        )}
         <button type="submit" className="submit-button">
           {initialData ? t('update_user') : t('add_user')}
         </button>

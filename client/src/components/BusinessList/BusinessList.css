@@ -1,0 +1,44 @@
+.business-list {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .business-list h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .business-list ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .business-list li {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .business-list li:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .business-list a {
+    display: block;
+    padding: 15px;
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .business-list h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+  }
+  
+  .business-list p {
+    margin: 0;
+    color: #666;
+  }

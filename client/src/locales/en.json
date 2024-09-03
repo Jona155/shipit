@@ -118,7 +118,16 @@
   "build_route": "Build New Route",
   "cancel_build_route": "Cancel Route Planning",
 
-  "search_users": "Search Existing User.."
+  "search_users": "Search Existing User..",
+
+  "login": "Login",
+  "email": "Email",
+  "password": "Password",
+  "login_error": "Invalid email or password",
+  "logout": "Logout", 
+
+  "nav_back_to_businesses": "My businesses",
+  "business_list": "My Business"
 
 
 }

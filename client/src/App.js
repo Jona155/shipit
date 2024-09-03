@@ -8,6 +8,7 @@ import Users from './components/Users/Users';
 import Analytics from './components/Analytics/Analytics';
 import Settings from './components/Settings/Settings';
 import HomePage from './components/HomePage';
+import BusinessList from './components/BusinessList/BusinessList';
 import './App.css';
 
 const App = () => {
@@ -18,12 +19,13 @@ const App = () => {
       <div className={`app ${i18n.language === 'he' ? 'rtl' : 'ltr'}`}>
         <Header />
         <main className="app-main-content">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/settings" element={<Settings />} />
+        <Routes>
+            <Route path="/" element={<BusinessList />} />
+            <Route path="/:businessId" element={<HomePage />} />
+            <Route path="/:businessId/orders" element={<Orders />} />
+            <Route path="/:businessId/users" element={<Users />} />
+            <Route path="/:businessId/analytics" element={<Analytics />} />
+            <Route path="/:businessId/settings" element={<Settings />} />
           </Routes>
         </main>
         <Footer />

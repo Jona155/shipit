@@ -9,7 +9,10 @@ const Header = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const location = useLocation();
   const navigate = useNavigate();
-  const isHomePage = location.pathname === '/';
+
+  const isBusinessList = location.pathname === '/';
+  const businessId = location.pathname.split('/')[1];
+  const isBusinessView = businessId && businessId !== 'login';
 
   useEffect(() => {
     const handleResize = () => {
@@ -21,18 +24,35 @@ const Header = () => {
   }, []);
 
   const handleMenuToggle = () => {
-    if (isMobile && !isHomePage) {
-      navigate('/');
+    if (isMobile) {
+      if (isBusinessView) {
+        navigate(`/${businessId}`);
+      } else {
+        navigate('/');
+      }
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    navigate('/login');
   };
 
   const renderNavLinks = () => (
     <nav className="main-nav">
       <ul>
-        <li><Link to="/orders">{t('nav_orders')}</Link></li>
-        <li><Link to="/users">{t('nav_users')}</Link></li>
-        <li><Link to="/analytics">{t('nav_analytics')}</Link></li>
-        <li><Link to="/settings">{t('nav_settings')}</Link></li>
+        {isBusinessView ? (
+          <>
+            <li><Link to={`/${businessId}/orders`}>{t('nav_orders')}</Link></li>
+            <li><Link to={`/${businessId}/users`}>{t('nav_users')}</Link></li>
+            <li><Link to={`/${businessId}/analytics`}>{t('nav_analytics')}</Link></li>
+            <li><Link to={`/${businessId}/settings`}>{t('nav_settings')}</Link></li>
+            <li><Link to="/">{t('nav_back_to_businesses')}</Link></li>
+          </>
+        ) : (
+          <li><Link to="/">{t('nav_businesses')}</Link></li>
+        )}
+        <li><button onClick={handleLogout} className="logout-button">{t('logout')}</button></li>
       </ul>
     </nav>
   );
@@ -40,7 +60,7 @@ const Header = () => {
   return (
     <header className={`app-header ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="header-content">
-        {isMobile && !isHomePage && (
+        {isMobile && !isBusinessList && (
           <div className="header-left">
             <button className="menu-toggle" onClick={handleMenuToggle}>
               ☰
@@ -48,7 +68,9 @@ const Header = () => {
           </div>
         )}
         <h1 className="app-title">
-          <Link to="/" className="home-link">{t('app_title')}</Link>
+          <Link to={isBusinessView ? `/${businessId}` : '/'} className="home-link">
+            {isBusinessView ? t('business_dashboard') : t('app_title')}
+          </Link>
         </h1>
         {!isMobile && renderNavLinks()}
       </div>

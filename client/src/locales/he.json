@@ -116,6 +116,15 @@
   "build_route": "תכנן מסלול חדש",
   "cancel_build_route": "בטל תכנון מסלול", 
 
-  "search_users": "חפש משתמש קיים..."
+  "search_users": "חפש משתמש קיים...",
+
+  "login": "התחברות",
+  "email": "אימייל",
+  "password": "סיסמה",
+  "login_error": "אימייל או סיסמה לא תקינים",
+  "logout": "התנתקות",
+
+  "nav_back_to_businesses": "העסקים שלי",
+  "business_list": "העסקים שלי"
 
 }

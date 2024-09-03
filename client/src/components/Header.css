@@ -60,6 +60,23 @@
   padding: 0;
 }
 
+/* Logout button styles */
+.logout-button {
+  background-color: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: white;
+  color: #2c3e50;
+}
+
 /* RTL styles */
 .app-header.rtl {
   direction: rtl;
@@ -105,5 +122,12 @@
 
   .menu-toggle {
     padding: 0.5rem;
+  }
+}
+
+/* Responsive logout button */
+@media screen and (max-width: 768px) {
+  .logout-button {
+    margin-top: 0.5rem;
   }
 }
