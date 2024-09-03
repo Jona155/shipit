@@ -127,7 +127,8 @@
   "logout": "Logout", 
 
   "nav_back_to_businesses": "My businesses",
-  "business_list": "My Business"
+  "business_list": "My Business",
+  "nav_businesses": "My Business"
 
 
 }
