@@ -9,8 +9,12 @@ const BusinessList = () => {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+
+
+
+  const isRTL = i18n.language === 'he';
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/businesses`)
@@ -35,7 +39,7 @@ const BusinessList = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="business-list">
+      <div className={`business-list ${isRTL ? 'rtl' : 'ltr'}`}>
       <h1>{t('business_list')}</h1>
       {businesses.length === 0 ? (
         <p>{t('no_businesses_found')}</p>

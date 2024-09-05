@@ -10,7 +10,6 @@ import { initialOrders, couriers } from './data';
 import { filterOrders, updateOrderStatus, assignCourier } from './orderUtils';
 
 const Orders = () => {
-  const { t } = useTranslation();
   const [orders, setOrders] = useState(initialOrders);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
@@ -22,6 +21,10 @@ const Orders = () => {
   const [selectedCourier, setSelectedCourier] = useState('');
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isMapView, setIsMapView] = useState(true);
+  const { t, i18n } = useTranslation();
+
+
+  const isRTL = i18n.language === 'he';
 
 
   // Display an alert message for a short duration
@@ -115,7 +118,7 @@ const Orders = () => {
   };
 
   return (
-    <div className="orders-container">
+    <div className={`orders-container ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="split-view">
         <div className="table-view">
         <OrdersTable 
