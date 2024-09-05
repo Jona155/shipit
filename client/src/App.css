@@ -13,6 +13,8 @@ body {
 .app-main {
   flex-grow: 1;
   padding: 2rem;
+  padding-top: 80px; /* Adjust this value based on your header's height */
+
 }
 
 .rtl {

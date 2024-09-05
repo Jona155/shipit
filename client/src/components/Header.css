@@ -5,6 +5,12 @@
   padding: 1rem;
 }
 
+.app-header.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
 .header-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -51,16 +57,6 @@
   color: #3498db;
 }
 
-.menu-toggle {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0;
-}
-
-/* Logout button styles */
 .logout-button {
   background-color: transparent;
   border: 1px solid white;
@@ -102,32 +98,30 @@
 /* Responsive styles */
 @media screen and (max-width: 768px) {
   .header-content {
-    justify-content: center;
-    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .app-title {
-    text-align: center;
+  .main-nav {
+    margin-top: 1rem;
+    width: 100%;
   }
 
-  .header-left {
-    position: absolute;
-    left: 0;
+  .main-nav ul {
+    flex-direction: column;
   }
 
-  .app-header.rtl .header-left {
-    left: auto;
-    right: 0;
+  .main-nav li {
+    margin: 0.5rem 0;
   }
 
-  .menu-toggle {
-    padding: 0.5rem;
+  .app-header.rtl .main-nav ul,
+  .app-header.ltr .main-nav ul {
+    flex-direction: column;
   }
-}
 
-/* Responsive logout button */
-@media screen and (max-width: 768px) {
-  .logout-button {
-    margin-top: 0.5rem;
+  .app-header.rtl .main-nav li,
+  .app-header.ltr .main-nav li {
+    margin: 0.5rem 0;
   }
 }

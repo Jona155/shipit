@@ -6,22 +6,18 @@ import './HomePage.css';
 
 const HomePage = () => {
   const { t, i18n } = useTranslation();
-
   const isRTL = i18n.language === 'he';
   const { businessId } = useParams();
 
-
   const navItems = [
-    { text: t('nav_orders'), icon: Package, path: `/${businessId}/orders` },
-    { text: t('nav_users'), icon: Users, path: `/${businessId}/users` },
-    { text: t('nav_analytics'), icon: BarChart, path: `/${businessId}/analytics` },
-    { text: t('nav_settings'), icon: Settings, path: `/${businessId}/settings` },
+    { text: t('nav_orders'), icon: Package, path: `orders` },
+    { text: t('nav_users'), icon: Users, path: `users` },
+    { text: t('nav_analytics'), icon: BarChart, path: `analytics` },
+    { text: t('nav_settings'), icon: Settings, path: `settings` },
   ];
 
   return (
     <div className={`home-page ${isRTL ? 'rtl' : 'ltr'}`}>
-      <header className="header">
-      </header>
       <main className="main-content">
         <div className="nav-grid">
           {navItems.map((item, index) => (

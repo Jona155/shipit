@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './BusinessList.css';
+
+
 
 const BusinessList = () => {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/api/businesses`)
       .then(response => {
         if (!response.ok) {
-          return response.text().then(text => {
-            throw new Error(`Network response was not ok: ${text}`);
-          });
+          throw new Error(`Network response was not ok: ${response.statusText}`);
         }
         return response.json();
       })
@@ -42,7 +43,7 @@ const BusinessList = () => {
         <ul>
           {businesses.map(business => (
             <li key={business._id}>
-              <Link to={`/${business._id}`}>
+              <Link to={`/shipit/${business._id}`}>
                 <h2>{business.name}</h2>
                 <p>{business.address}</p>
               </Link>

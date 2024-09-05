@@ -128,7 +128,9 @@
 
   "nav_back_to_businesses": "My businesses",
   "business_list": "My Business",
-  "nav_businesses": "My Business"
+  "nav_businesses": "My Business",
+
+  "business_dashboard": "Shipit"
 
 
 }
