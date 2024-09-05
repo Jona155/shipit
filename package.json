@@ -9,8 +9,5 @@
     "start": "cd server && python app.py",
     "heroku-postbuild": "cd client && npm install && npm run build"
   },
-  "cacheDirectories": ["client/node_modules"],
-  "devDependencies": {
-    "concurrently": "^6.2.0"
-  }
+  "cacheDirectories": ["client/node_modules"]
 }
