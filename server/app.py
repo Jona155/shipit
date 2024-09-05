@@ -5,7 +5,7 @@ from api import businesses, users
 from services.database import init_db
 import logging
 
-app = Flask(__name__, static_folder='../client/build' if os.environ.get('FLASK_ENV') == 'production' else None)
+app = Flask(__name__, static_folder='../client/build')
 CORS(app)
 
 # Configure logging
@@ -18,14 +18,13 @@ init_db(app)
 app.register_blueprint(businesses.bp)
 app.register_blueprint(users.bp)
 
-if os.environ.get('FLASK_ENV') == 'production':
-    @app.route('/', defaults={'path': ''})
-    @app.route('/<path:path>')
-    def serve(path):
-        if path != "" and os.path.exists(app.static_folder + '/' + path):
-            return send_from_directory(app.static_folder, path)
-        else:
-            return send_from_directory(app.static_folder, 'index.html')
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.errorhandler(404)
 def not_found(error):

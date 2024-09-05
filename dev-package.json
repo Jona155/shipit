@@ -1,0 +1,13 @@
+{
+    "name": "your-project-name-dev",
+    "version": "1.0.0",
+    "description": "Your project description (Development)",
+    "scripts": {
+      "server": "cd server && python app.py",
+      "client": "cd client && npm start",
+      "dev": "concurrently \"npm run server\" \"npm run client\""
+    },
+    "devDependencies": {
+      "concurrently": "^6.2.0"
+    }
+  }

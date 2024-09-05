@@ -6,18 +6,11 @@
     "node": "14.x"
   },
   "scripts": {
-    "start": "node server/server.js",
-    "server": "nodemon server/server.js",
-    "client": "npm start --prefix client",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
+    "start": "cd server && python app.py",
+    "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "cacheDirectories": ["client/node_modules"],
-  "dependencies": {
-    "concurrently": "^6.2.0",
-    "express": "^4.17.1"
-  },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "concurrently": "^6.2.0"
   }
 }
