@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import Loader from '../Loader';
 import './BusinessList.css';
 
 
@@ -35,7 +36,7 @@ const BusinessList = () => {
       });
   }, []);
 
-  if (loading) return <div>{t('loading')}</div>;
+  if (loading) return <Loader />; // Use the Loader component
   if (error) return <div>{error}</div>;
 
   return (

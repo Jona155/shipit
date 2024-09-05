@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import UserList from './UserList';
 import UserForm from './UserForm';
+import Loader from '../Loader';
 import './Users.css';
 
 const API_BASE_URL = 'http://127.0.0.1:5000';
@@ -119,7 +120,7 @@ const Users = () => {
     (user.phoneNumber && user.phoneNumber.toLowerCase().includes(searchTerm))
   );
 
-  if (isLoading) return <div>{t('loading')}</div>;
+  if (isLoading) return <Loader />; // Use the Loader component
   if (error) return <div>{t('error')}: {error}</div>;
 
   return (
