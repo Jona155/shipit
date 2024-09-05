@@ -8,7 +8,9 @@ const UserForm = ({ onSubmit, initialData, onClose }) => {
     name: '',
     phoneNumber: '',
     type: 'messenger',
-    isCurrentlyOnShift: false
+    isCurrentlyOnShift: false,
+    username: '',
+    password: ''
   });
 
   useEffect(() => {
@@ -19,7 +21,9 @@ const UserForm = ({ onSubmit, initialData, onClose }) => {
         name: '',
         phoneNumber: '',
         type: 'messenger',
-        isCurrentlyOnShift: false
+        isCurrentlyOnShift: false,
+        username: '',
+        password: ''
       });
     }
   }, [initialData]);
@@ -80,6 +84,28 @@ const UserForm = ({ onSubmit, initialData, onClose }) => {
             />
             {t('user_is_on_shift')}
           </label>
+        )}
+        {!initialData && (
+          <>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder={t('user_username_placeholder')}
+              required
+              className="form-input"
+            />
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder={t('user_password_placeholder')}
+              required
+              className="form-input"
+            />
+          </>
         )}
         <button type="submit" className="submit-button">
           {initialData ? t('update_user') : t('add_user')}

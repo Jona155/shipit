@@ -128,7 +128,10 @@
   "business_list": "העסקים שלי",
   "nav_businesses": "העסקים שלי",
 
-  "business_dashboard": "Shipit"
+  "business_dashboard": "Shipit",
+  "user_username_placeholder": "שם משתמש",
+  "user_password_placeholder": "סיסמה"
+
 
 
 }

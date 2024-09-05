@@ -1,3 +1,4 @@
+import uuid
 from flask import Blueprint, jsonify, request
 from services.database import get_db
 import logging
@@ -119,3 +120,67 @@ def delete_user(user_id):
     except Exception as e:
         logging.error(f"Error deleting user: {str(e)}")
         return jsonify({"error": "An error occurred while deleting the user"}), 500
+    
+@bp.route('/add', methods=['POST'])
+def add_user():
+    try:
+        db = get_db()
+        data = request.json
+
+        # Validate required fields
+        required_fields = ['name', 'phoneNumber', 'type', 'businessId']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+
+        # Generate a new UUID
+        user_id = str(uuid.uuid4())
+
+        # Create user document
+        new_user = {
+            "_id": user_id,
+            "name": data['name'],
+            "phoneNumber": data['phoneNumber'],
+            "username": data.get('username'),
+            "password": data.get('password'),  # Store password as plain text (not recommended for production)
+            "deviceInfo": {
+                "userId": str(uuid.uuid4()),
+                "os": "unknown"
+            }
+        }
+
+        # Insert user document
+        db.users.insert_one(new_user)
+
+        # Create user_businesses document
+        current_time = datetime.utcnow()
+        user_business = {
+            "_id": str(uuid.uuid4()),
+            "uid": user_id,
+            "bid": data['businessId'],
+            "profiles": {
+                data['type']: {
+                    "isCurrentlyOnShift": data['type'] == 'messenger',
+                    "isCurrentlyAvailable": data['type'] == 'messenger',
+                    "lastAvailableTimestamp": current_time,
+                    "lastNonAvailableTimestamp": current_time,
+                    "location": {
+                        "lat": 0,
+                        "lng": 0,
+                        "timestamp": current_time,
+                        "bearing": 0
+                    },
+                    "isWhileMission": False
+                }
+            },
+            "isDeleted": False
+        }
+
+        # Insert user_businesses document
+        db.user_businesses.insert_one(user_business)
+
+        return jsonify({"message": "User added successfully", "userId": user_id}), 201
+
+    except Exception as e:
+        logging.error(f"Error adding user: {str(e)}")
+        return jsonify({"error": f"An error occurred while adding the user: {str(e)}"}), 500

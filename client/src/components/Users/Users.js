@@ -6,7 +6,7 @@ import UserForm from './UserForm';
 import Loader from '../Loader';
 import './Users.css';
 
-const API_BASE_URL = 'http://127.0.0.1:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 const Users = () => {
   const { t, i18n } = useTranslation();
@@ -24,7 +24,7 @@ const Users = () => {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/business/${businessId}`);
+        const response = await fetch(`${API_BASE_URL}/api/users/business/${businessId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch users');
         }
@@ -41,10 +41,33 @@ const Users = () => {
     fetchUsers();
   }, [businessId]);
 
-  const addUser = (user) => {
-    // TODO: Implement user addition via API
-    setUsers([...users, { ...user, uid: Date.now().toString() }]);
-    setIsFormVisible(false);
+  const addUser = async (user) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...user,
+          businessId: businessId
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to add user: ${response.status} ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      setUsers([...users, { ...user, uid: data.userId }]);
+      setIsFormVisible(false);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateUser = async (updatedUser) => {
@@ -120,7 +143,7 @@ const Users = () => {
     (user.phoneNumber && user.phoneNumber.toLowerCase().includes(searchTerm))
   );
 
-  if (isLoading) return <Loader />; // Use the Loader component
+  if (isLoading) return <Loader />;
   if (error) return <div>{t('error')}: {error}</div>;
 
   return (
@@ -158,4 +181,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default Users; 
