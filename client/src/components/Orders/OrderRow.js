@@ -1,5 +1,5 @@
-import { t } from 'i18next';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const OrderRow = ({ 
   order, 
@@ -10,44 +10,58 @@ const OrderRow = ({
   onUnassignOrder, 
   onReturnToOnTheirWay 
 }) => {
+  const { t } = useTranslation();
+
+  console.log('Rendering OrderRow:', order);
+
+  const getOrderStatus = (order) => {
+    const latestStatus = order.latest_status?.toUpperCase();
+    if (['READY', 'ACCEPTED'].includes(latestStatus)) return 'accepted';
+    if (['ASSIGNED', 'COLLECTED'].includes(latestStatus)) return 'on_their_way';
+    if (latestStatus === 'DELIVERED') return 'finished';
+    return 'unknown';
+  };
+
+  const orderStatus = getOrderStatus(order);
+
   return (
     <tr>
-      {activeTab === 'Accepted' && (
+      {activeTab === 'accepted' && (
         <td>
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={() => onSelectOrder(order.id)}
+            onChange={() => onSelectOrder(order._id)}
           />
         </td>
       )}
-      <td>{order.id}</td>
-      <td>{order.customer}</td>
+      <td>{order.short_id || order._id}</td>
+      <td>{order.customer_name}</td>
       <td>{order.address}</td>
-      <td>{order.items}</td>
-      <td>{order.status}</td>
-      {(activeTab === 'On Their Way' || activeTab === 'Finished') && <td>{order.courier}</td>}
+      <td>{order.comments_for_order}</td>
+      <td>{t(`order_status_${orderStatus}`)}</td>
+      {(activeTab === 'on_their_way' || activeTab === 'finished') && <td>{order.courier || 'Unassigned'}</td>}
       <td>
-        {activeTab === 'On Their Way' && (
+        {activeTab === 'on_their_way' && (
           <>
             <button 
               className="finish-order-button"
-              onClick={() => onFinishOrder(order.id)}
+              onClick={() => onFinishOrder(order._id)}
             >
               {t('orders_finish')}
             </button>
             <button 
               className="unassign-order-button"
-              onClick={() => onUnassignOrder(order.id)}
+              onClick={() => onUnassignOrder(order._id)}
             >
               {t('orders_unassign')}
             </button>
           </>
         )}
-        {activeTab === 'Finished' && (
+        {activeTab === 'finished' && (
           <button 
             className="return-to-route-button"
-            onClick={() => onReturnToOnTheirWay(order.id)}
+            onClick={() => onReturnToOnTheirWay(order._id)}
           >
             {t('orders_return')}
           </button>

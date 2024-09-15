@@ -23,21 +23,45 @@ const OrdersTable = ({
 }) => {
   const { t } = useTranslation();
 
-  const filteredOrders = orders.filter(order => 
-    order.status === activeTab && 
-    (order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     order.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     order.items.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  console.log('OrdersTable received orders:', orders);
+
+  const getOrderStatus = (order) => {
+    const latestStatus = order.latest_status?.toUpperCase();
+    if (['READY', 'ACCEPTED'].includes(latestStatus)) return 'accepted';
+    if (['ASSIGNED', 'COLLECTED'].includes(latestStatus)) return 'on_their_way';
+    if (latestStatus === 'DELIVERED') return 'finished';
+    return 'unknown';
+  };
+
+  const filteredOrders = orders.filter(order => {
+    const orderStatus = getOrderStatus(order);
+    const customerName = order.customer_name || '';
+    const address = order.address || '';
+    const comments = order.comments_for_order || '';
+    const searchTermLower = searchTerm.toLowerCase();
+
+    console.log(`Order ${order._id} status: ${orderStatus}, activeTab: ${activeTab}`);
+
+    return (
+      orderStatus === activeTab &&
+      (customerName.toLowerCase().includes(searchTermLower) ||
+       address.toLowerCase().includes(searchTermLower) ||
+       comments.toLowerCase().includes(searchTermLower))
+    );
+  });
+
+  console.log('Filtered orders:', filteredOrders);
 
   const groupedOrders = filteredOrders.reduce((acc, order) => {
-    if (order.status === 'On Their Way') {
-      if (!acc[order.courier]) {
-        acc[order.courier] = [];
+    const status = getOrderStatus(order);
+    if (status === 'on_their_way') {
+      const courier = order.courier || 'Unassigned';
+      if (!acc[courier]) {
+        acc[courier] = [];
       }
-      acc[order.courier].push(order);
+      acc[courier].push(order);
     } else {
-      const groupName = order.status === 'Finished' ? t('orders_finished') : t('orders_unassigned');
+      const groupName = status === 'finished' ? t('orders_finished') : t('orders_unassigned');
       if (!acc[groupName]) {
         acc[groupName] = [];
       }
@@ -45,6 +69,8 @@ const OrdersTable = ({
     }
     return acc;
   }, {});
+
+  console.log('Grouped orders:', groupedOrders);
 
   return (
     <div className="orders-table-container">
@@ -57,13 +83,13 @@ const OrdersTable = ({
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <div className="tabs">
-          {['Accepted', 'On Their Way', 'Finished'].map((tab) => (
+          {['accepted', 'on_their_way', 'finished'].map((tab) => (
             <button
               key={tab}
               className={`tab ${activeTab === tab ? 'active' : ''}`}
               onClick={() => setActiveTab(tab)}
             >
-              {t(tab.toLowerCase().replace(' ', '_'))}
+              {t(`orders_${tab}`)}
             </button>
           ))}
         </div>
@@ -80,7 +106,7 @@ const OrdersTable = ({
         <div key={group}>
           <div className="group-header">
             <h2>{group}</h2>
-            {activeTab === 'On Their Way' && group !== t('orders_unassigned') && (
+            {activeTab === 'on_their_way' && group !== t('orders_unassigned') && (
               <button 
                 className="finish-route-button"
                 onClick={() => onFinishRoute(group)}
@@ -92,23 +118,23 @@ const OrdersTable = ({
           <table className="orders-table">
             <thead>
               <tr>
-                {activeTab === 'Accepted' && <th>{t('orders_select')}</th>}
+                {activeTab === 'accepted' && <th>{t('orders_select')}</th>}
                 <th>{t('orders_id')}</th>
                 <th>{t('orders_customer')}</th>
                 <th>{t('orders_address')}</th>
                 <th>{t('orders_items')}</th>
                 <th>{t('orders_status')}</th>
-                {(activeTab === 'On Their Way' || activeTab === 'Finished') && <th>{t('orders_courier')}</th>}
+                {(activeTab === 'on_their_way' || activeTab === 'finished') && <th>{t('orders_courier')}</th>}
                 <th>{t('orders_action')}</th>
               </tr>
             </thead>
             <tbody>
               {groupOrders.map(order => (
                 <OrderRow 
-                  key={order.id}
+                  key={order._id}
                   order={order}
                   activeTab={activeTab}
-                  isSelected={selectedOrders.includes(order.id)}
+                  isSelected={selectedOrders.includes(order._id)}
                   onSelectOrder={onSelectOrder}
                   onFinishOrder={onFinishOrder}
                   onUnassignOrder={onUnassignOrder}

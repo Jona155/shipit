@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import './Orders.css';
 import OrdersTable from './OrdersTable';
 import OrdersMap from './OrdersMap'; 
@@ -6,15 +8,18 @@ import Alert from './Alert';
 import OrderForm from './OrderForm';
 import CourierAssignment from './CourierAssignment';
 import { useTranslation } from 'react-i18next';
-import { initialOrders, couriers } from './data';
+import { couriers } from './data';
 import { filterOrders, updateOrderStatus, assignCourier } from './orderUtils';
 
 const Orders = () => {
-  const [orders, setOrders] = useState(initialOrders);
+  const { businessId } = useParams();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [activeTab, setActiveTab] = useState('Accepted');
+  const [activeTab, setActiveTab] = useState('accepted');
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSelectingForRoute, setIsSelectingForRoute] = useState(false);
@@ -23,18 +28,37 @@ const Orders = () => {
   const [isMapView, setIsMapView] = useState(true);
   const { t, i18n } = useTranslation();
 
-
   const isRTL = i18n.language === 'he';
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/business/${businessId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+        const data = await response.json();
+        console.log('Fetched orders:', data);
+        setOrders(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Display an alert message for a short duration
+    fetchOrders();
+  }, [businessId]);
+
   const showAlertMessage = (message) => {
     setAlertMessage(message);
     setShowAlert(true);
     setTimeout(() => setShowAlert(false), 3000);
   };
 
-  // Toggle selection of an order
   const handleSelectOrder = (orderId) => {
     setSelectedOrders(prevSelected => 
       prevSelected.includes(orderId)
@@ -43,7 +67,6 @@ const Orders = () => {
     );
   };
 
-  // Assign selected orders to a courier
   const handleAssignCourier = (courier) => {
     if (selectedOrders.length === 0 || !courier) {
       alert(t('select_orders_and_courier'));
@@ -57,50 +80,45 @@ const Orders = () => {
     showAlertMessage(t('orders_assigned_success'));
   };
 
-  // Unassign a courier from an order
   const handleUnassignOrder = (orderId) => {
     setOrders(prevOrders =>
       prevOrders.map(order =>
-        order.id === orderId ? { ...order, status: 'Accepted', courier: null } : order
+        order._id === orderId ? { ...order, latest_status: 'accepted', courier: null } : order
       )
     );
     showAlertMessage(t('order_unassigned'));
   };
 
-  // Finish an order
   const handleFinishOrder = (orderId) => {
-    setOrders(updateOrderStatus(orders, orderId, 'Finished'));
+    setOrders(updateOrderStatus(orders, orderId, 'finished'));
     showAlertMessage(t('order_finished'));
   };
 
-  // Mark all orders for a courier as finished
   const handleFinishRoute = (courier) => {
     setOrders(prevOrders =>
       prevOrders.map(order =>
-        order.courier === courier && order.status === 'On Their Way'
-          ? { ...order, status: 'Finished' }
+        order.courier === courier && order.latest_status === 'on_their_way'
+          ? { ...order, latest_status: 'finished' }
           : order
       )
     );
     showAlertMessage(t('route_orders_finished'));
   };
 
-    // Return a finished order to 'On Their Way' status
-    const handleReturnToOnTheirWay = (orderId) => {
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order.id === orderId ? { ...order, status: 'On Their Way' } : order
-        )
-      );
-      showAlertMessage(t('order_returned_to_on_their_way'));
-    };
+  const handleReturnToOnTheirWay = (orderId) => {
+    setOrders(prevOrders =>
+      prevOrders.map(order =>
+        order._id === orderId ? { ...order, latest_status: 'on_their_way' } : order
+      )
+    );
+    showAlertMessage(t('order_returned_to_on_their_way'));
+  };
 
-  // Add a new order to the list
   const handleAddOrder = (newOrder) => {
     const order = {
       ...newOrder,
-      id: Date.now(),
-      status: 'Accepted'
+      _id: Date.now().toString(),
+      latest_status: 'accepted'
     };
     setOrders([...orders, order]);
     setShowOrderForm(false);
@@ -117,11 +135,16 @@ const Orders = () => {
     setSelectedOrders([]);
   };
 
+  console.log('Current orders state:', orders); // Log the current orders state before rendering
+
+  if (loading) return <div>{t('loading')}</div>;
+  if (error) return <div>{t('error')}: {error}</div>;
+
   return (
     <div className={`orders-container ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="split-view">
         <div className="table-view">
-        <OrdersTable 
+          <OrdersTable 
             orders={orders}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -142,14 +165,14 @@ const Orders = () => {
         </div>
         <div className="map-view">
           <OrdersMap
-            orders={filterOrders(orders, searchTerm)}
+            orders={orders}
             activeTab={activeTab}
             isSelectingForRoute={isSelectingForRoute}
             selectedOrders={selectedOrders}
             onSelectOrder={handleSelectOrder}
           />
         </div>
-      </div>
+        </div>
       <button onClick={() => setIsAssignModalOpen(true)} className="assign-courier-button">
         {t('assign_courier')}
       </button>
@@ -162,6 +185,7 @@ const Orders = () => {
         orders={orders}
         selectedCourier={selectedCourier}
         setSelectedCourier={setSelectedCourier}
+        businessId={businessId}
       />
       {showOrderForm && (
         <div className="side-panel visible">

@@ -1,7 +1,7 @@
 from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 import os
-from api import businesses, users
+from api import businesses, users, orders
 from services.database import init_db
 import logging
 
@@ -17,6 +17,7 @@ init_db(app)
 # Register blueprints
 app.register_blueprint(businesses.bp)
 app.register_blueprint(users.bp)
+app.register_blueprint(orders.bp)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -37,4 +38,4 @@ def internal_error(error):
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5001))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)  

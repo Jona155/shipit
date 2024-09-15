@@ -2,6 +2,7 @@ import React, { useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { useTranslation } from 'react-i18next';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -29,7 +30,19 @@ const generateCourierColors = (couriers) => {
 };
 
 const OrdersMap = ({ orders, activeTab, isSelectingForRoute, selectedOrders, onSelectOrder }) => {
-  const filteredOrders = orders.filter(order => order.status === activeTab);
+  const { t } = useTranslation();
+
+  const getOrderStatus = (order) => {
+    const latestStatus = order.latest_status?.toUpperCase();
+    if (['READY', 'ACCEPTED'].includes(latestStatus)) return 'accepted';
+    if (['ASSIGNED', 'COLLECTED'].includes(latestStatus)) return 'on_their_way';
+    if (latestStatus === 'DELIVERED') return 'finished';
+    return 'unknown';
+  };
+
+  const filteredOrders = orders.filter(order => getOrderStatus(order) === activeTab);
+
+  console.log('Filtered orders for map:', filteredOrders);
 
   // Generate colors for couriers
   const courierColors = useMemo(() => {
@@ -41,7 +54,11 @@ const OrdersMap = ({ orders, activeTab, isSelectingForRoute, selectedOrders, onS
     const map = useMap();
     useEffect(() => {
       map.invalidateSize();
-    }, [map]);
+      if (filteredOrders.length > 0) {
+        const bounds = L.latLngBounds(filteredOrders.map(order => [order.location.lat, order.location.lng]));
+        map.fitBounds(bounds);
+      }
+    }, [map, filteredOrders]);
     return null;
   };
 
@@ -63,52 +80,54 @@ const OrdersMap = ({ orders, activeTab, isSelectingForRoute, selectedOrders, onS
 
   // Get appropriate icon based on order status and courier
   const getIcon = (order) => {
-    if (activeTab === 'On Their Way' && order.courier) {
+    const status = getOrderStatus(order);
+    if (status === 'on_their_way' && order.courier) {
       return createCustomIcon(courierColors[order.courier]);
-    } else if (activeTab === 'Finished') {
+    } else if (status === 'finished') {
       return createCustomIcon('#808080'); // Gray for finished orders
-    } else if (activeTab === 'Accepted') {
+    } else if (status === 'accepted') {
       return createCustomIcon('#FFA500'); // Orange for accepted orders
     }
     return new L.Icon.Default(); // Default icon as fallback
   };
 
-
-return (
-  <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '100%', width: '100%' }}>
-    <MapAdjuster />
-    <TileLayer
-      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    />
-    {filteredOrders.map(order => (
-      <Marker 
-        key={order.id} 
-        position={[order.lat, order.lng]}
-        icon={getIcon(order)}
-        eventHandlers={{
-          click: () => handleMarkerClick(order.id),
-        }}
-        opacity={isSelectingForRoute && !selectedOrders.includes(order.id) ? 0.5 : 1}
-      >
-        <Popup>
-        <div>
-                <h3>{order.customer}</h3>
+  return (
+    <MapContainer center={[31.7767, 35.2345]} zoom={7} style={{ height: '100%', width: '100%' }}>
+      <MapAdjuster />
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      {filteredOrders.map(order => (
+        order.location && order.location.lat && order.location.lng ? (
+          <Marker 
+            key={order._id} 
+            position={[order.location.lat, order.location.lng]}
+            icon={getIcon(order)}
+            eventHandlers={{
+              click: () => handleMarkerClick(order._id),
+            }}
+            opacity={isSelectingForRoute && !selectedOrders.includes(order._id) ? 0.5 : 1}
+          >
+            <Popup>
+              <div>
+                <h3>{order.customer_name}</h3>
                 <p>{order.address}</p>
-                <p>Items: {order.items}</p>
-                <p>Status: {order.status}</p>
-                {order.courier && <p>Courier: {order.courier}</p>}
+                <p>{t('order_items')}: {order.comments_for_order}</p>
+                <p>{t('order_status')}: {t(`order_status_${getOrderStatus(order)}`)}</p>
+                {order.courier && <p>{t('order_courier')}: {order.courier}</p>}
                 {isSelectingForRoute && (
-                  <button onClick={() => onSelectOrder(order.id)}>
-                    {selectedOrders.includes(order.id) ? 'Deselect' : 'Select'}
+                  <button onClick={() => onSelectOrder(order._id)}>
+                    {selectedOrders.includes(order._id) ? t('deselect') : t('select')}
                   </button>
                 )}
               </div>
-        </Popup>
-      </Marker>
-    ))}
-  </MapContainer>
-);
+            </Popup>
+          </Marker>
+        ) : null
+      ))}
+    </MapContainer>
+  );
 };
 
 export default OrdersMap;
