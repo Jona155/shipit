@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 const CourierPopup = ({ onAssign, onClose }) => {
   const { t } = useTranslation();
   const [selectedCourier, setSelectedCourier] = useState('');
-  const couriers = ['John Delivery', 'Sarah Swift', 'Mike Wheels', 'Emily Express'];
 
   return (
     <div className="popup-overlay">
