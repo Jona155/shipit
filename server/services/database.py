@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from config import Config
+from server.config import Config
 import certifi
 
 client = None
