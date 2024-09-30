@@ -1,11 +1,13 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const isLoggedIn = !!localStorage.getItem('isLoggedIn'); // Replace with your actual auth check
+  const { isLoggedIn } = useAuth();
+  const location = useLocation();
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;

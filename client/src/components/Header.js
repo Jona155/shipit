@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from './AuthContext'; // Make sure this path is correct
 import './Header.css';
 
 const Header = () => {
@@ -8,13 +9,14 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { businessId } = useParams();
+  const { logout } = useAuth(); // Use the logout function from AuthContext
   const isRTL = i18n.language === 'he';
 
   const isBusinessList = location.pathname === '/shipit/businesses';
   const isBusinessView = businessId && businessId !== 'businesses';
 
   const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
+    logout(); // This will remove the authToken and update the isLoggedIn state
     navigate('/login');
   };
 

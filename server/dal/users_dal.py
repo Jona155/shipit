@@ -1,8 +1,5 @@
 import uuid
 from datetime import datetime
-from bson import ObjectId
-from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
-import logging
 
 class UsersDAL:
     def __init__(self, db):

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
-from services.database import get_db
 import logging
 from dal.businesses_dal import BusinessesDAL
+from services.database import get_db
 
 bp = Blueprint('businesses', __name__, url_prefix='/api/businesses')
 
