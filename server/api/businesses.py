@@ -1,46 +1,11 @@
-# from flask import Blueprint, jsonify
-# import logging
-# from dal.businesses_dal import BusinessesDAL
-# from services.database import get_db
-#
-# bp = Blueprint('businesses', __name__, url_prefix='/api/businesses')
-#
-#
-# @bp.route('/')
-# def get_businesses():
-#     try:
-#         db = get_db()
-#         businesses_dal = BusinessesDAL(db)
-#         businesses = businesses_dal.get_businesses()
-#         return jsonify(businesses)
-#     except Exception as e:
-#         logging.error(f"Unexpected error: {str(e)}")
-#         return jsonify({"error": "An unexpected error occurred"}), 500
-#
-#
-# @bp.route('/<business_id>')
-# def get_business(business_id):
-#     try:
-#         db = get_db()
-#         businesses_dal = BusinessesDAL(db)
-#         business = businesses_dal.get_business(business_id)
-#
-#         if business:
-#             return jsonify(business)
-#         else:
-#             return jsonify({"error": "Business not found"}), 404
-#     except Exception as e:
-#         logging.error(f"Unexpected error: {str(e)}")
-#         return jsonify({"error": "An unexpected error occurred"}), 500
-
 from flask import Blueprint, jsonify, request
 import logging
 from dal.businesses_dal import BusinessesDAL
 from dal.auth_dal import AuthDAL
+from dal.users_dal import UsersDAL  # Import UsersDAL to fetch the user record
 from services.database import get_db
 
 bp = Blueprint('businesses', __name__, url_prefix='/api/businesses')
-
 
 @bp.route('/')
 def get_businesses():
@@ -48,8 +13,9 @@ def get_businesses():
         db = get_db()
         auth_dal = AuthDAL(db)
         businesses_dal = BusinessesDAL(db)
+        users_dal = UsersDAL(db)  # Create an instance to fetch user details
 
-        # Get the token from the Authorization header
+        # Get the token from the request header
         token = request.headers.get('authToken')
         if not token:
             return jsonify({"error": "No token provided"}), 401
@@ -59,8 +25,15 @@ def get_businesses():
         if not user_id:
             return jsonify({"error": "Invalid or expired token"}), 401
 
-        # Get the businesses for the user
-        businesses = businesses_dal.get_businesses_for_user(user_id)
+        # Retrieve the full user record to check the isApplicationManager flag
+        user = users_dal.get_user(user_id)
+        if user and user.get('isApplicationManager'):
+            # If the user is an application manager, fetch all businesses
+            businesses = businesses_dal.get_businesses()
+        else:
+            # Otherwise, fetch only businesses associated with this user
+            businesses = businesses_dal.get_businesses_for_user(user_id)
+
         return jsonify(businesses)
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
@@ -74,7 +47,7 @@ def get_business(business_id):
         auth_dal = AuthDAL(db)
         businesses_dal = BusinessesDAL(db)
 
-        # Get the token from the Authorization header
+        # Get the token from the request header
         token = request.headers.get('authToken')
         if not token:
             return jsonify({"error": "No token provided"}), 401

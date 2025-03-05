@@ -28,6 +28,10 @@ class BusinessesDAL:
 
         return list(businesses)
 
+    # New method added to return all businesses without filtering by user
+    def get_businesses(self):
+        return list(self.db.businesses.find())
+
     def get_business(self, business_id):
         return self.db.businesses.find_one({"_id": business_id})
 

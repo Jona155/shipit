@@ -1,8 +1,9 @@
+// OrdersTable.js
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import OrderRow from './OrderRow';
 import './OrdersTable.css';
-import {getOrderStatus} from "./orderUtils";
+import { getOrderStatus } from "./orderUtils";
 
 const OrdersTable = ({ 
   orders, 
@@ -24,26 +25,25 @@ const OrdersTable = ({
 }) => {
   const { t } = useTranslation();
 
+  // Determine if we are on a vendor page (if the first order includes a 'sent_from' field)
+  const isVendorPage = orders.length > 0 && Boolean(orders[0].sent_from);
+  const partnerHeader = isVendorPage
+    ? t('orders_partner_restaurant', { defaultValue: 'Sent From (Restaurant)' })
+    : t('orders_partner_vendor', { defaultValue: 'Sent To (Vendor)' });
 
- const groupedOrders = orders.reduce((acc, order) => {
-  const status = getOrderStatus(order);
-  if (status === 'on_their_way') {
-    const courier = order.courier_name || order.courier_id || t('orders_unassigned');
-    if (!acc[courier]) {
-      acc[courier] = [];
+  const groupedOrders = orders.reduce((acc, order) => {
+    const status = getOrderStatus(order);
+    if (status === 'on_their_way') {
+      const courier = order.courier_name || order.courier_id || t('orders_unassigned');
+      if (!acc[courier]) acc[courier] = [];
+      acc[courier].push(order);
+    } else {
+      const groupName = status === 'finished' ? t('orders_finished') : t('orders_accepted');
+      if (!acc[groupName]) acc[groupName] = [];
+      acc[groupName].push(order);
     }
-    acc[courier].push(order);
-  } else {
-    const groupName = status === 'finished' ? t('orders_finished') : t('orders_accepted');
-    if (!acc[groupName]) {
-      acc[groupName] = [];
-    }
-    acc[groupName].push(order);
-  }
-  return acc;
-}, {});
-
-  console.log('Grouped orders:', groupedOrders);
+    return acc;
+  }, {});
 
   return (
     <div className="orders-table-container">
@@ -56,7 +56,7 @@ const OrdersTable = ({
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <div className="tabs">
-          {['accepted', 'on_their_way', 'finished'].map((tab) => (
+          {['accepted', 'on_their_way', 'finished'].map(tab => (
             <button
               key={tab}
               className={`tab ${activeTab === tab ? 'active' : ''}`}
@@ -67,7 +67,7 @@ const OrdersTable = ({
           ))}
         </div>
         {isMapView && (
-          <button 
+          <button
             className={`build-route-button ${isSelectingForRoute ? 'cancel' : ''}`}
             onClick={isSelectingForRoute ? onCancelBuildRoute : onBuildRoute}
           >
@@ -75,49 +75,50 @@ const OrdersTable = ({
           </button>
         )}
       </div>
-      {Object.entries(groupedOrders).map(([group, groupOrders]) => (
-        <div key={group}>
-          <div className="group-header">
-            <h2>{group}</h2>
-            {activeTab === 'on_their_way' && group !== t('orders_unassigned') && (
-              <button 
-                className="finish-route-button"
-                onClick={() => onFinishRoute(group)}
-              >
-                {t('orders_finish_route')}
-              </button>
-            )} 
-          </div>
-          <table className="orders-table">
-            <thead>
-            <tr>
-              {activeTab === 'accepted' && <th>{t('orders_select')}</th>}
-              <th>{t('orders_id')}</th>
-              <th>{t('orders_customer')}</th>
-              <th>{t('orders_address')}</th>
-              <th>{t('orders_items')}</th>
-              <th>{t('orders_status')}</th>
-              {(activeTab === 'on_their_way' || activeTab === 'finished') && <th>{t('orders_courier')}</th>}
-              <th>{t('orders_action')}</th>
-            </tr>
-            </thead>
-            <tbody>
-            {groupOrders.map(order => (
+      <table className="orders-table">
+        <thead>
+          <tr>
+            {activeTab === 'accepted' && <th>{t('orders_select')}</th>}
+            <th>{t('orders_id')}</th>
+            <th>{t('orders_customer')}</th>
+            <th>{t('orders_address')}</th>
+            <th>{t('orders_items')}</th>
+            <th>{t('orders_status')}</th>
+            <th>{partnerHeader}</th>
+            {(activeTab === 'on_their_way' || activeTab === 'finished') && <th>{t('orders_courier')}</th>}
+            <th>{t('orders_action')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(groupedOrders).map(([group, groupOrders]) => (
+            <React.Fragment key={group}>
+              <tr>
+                  {activeTab === 'on_their_way' && group !== t('orders_unassigned') && (
+                    <button
+                      className="finish-route-button"
+                      onClick={() => onFinishRoute(group)}
+                    >
+                      {t('orders_finish_route')}
+                    </button>
+                  )}
+              </tr>
+              {groupOrders.map(order => (
                 <OrderRow
-                    key={order._id}
-                    order={order}
-                    activeTab={activeTab}
-                    isSelected={selectedOrders.includes(order._id)}
-                    onSelectOrder={onSelectOrder}
-                    onFinishOrder={onFinishOrder}
-                    onUnassignOrder={onUnassignOrder}
-                    onReturnToOnTheirWay={onReturnToOnTheirWay}
+                  key={order._id}
+                  order={order}
+                  activeTab={activeTab}
+                  isSelected={selectedOrders.includes(order._id)}
+                  onSelectOrder={onSelectOrder}
+                  onFinishOrder={onFinishOrder}
+                  onUnassignOrder={onUnassignOrder}
+                  onReturnToOnTheirWay={onReturnToOnTheirWay}
+                  isVendorPage={isVendorPage}
                 />
-            ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
+              ))}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
       <div className="add-order-row">
         <button className="add-order-button" onClick={onAddOrder}>
           {t('add_order')}
