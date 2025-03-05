@@ -1,7 +1,7 @@
 from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 import os
-from api import businesses, users, orders, auth
+from api import businesses, users, orders, auth, connections
 from services.database import init_db
 import logging
 
@@ -18,7 +18,9 @@ init_db(app)
 app.register_blueprint(businesses.bp)
 app.register_blueprint(users.bp)
 app.register_blueprint(orders.bp)
-app.register_blueprint(auth.bp)  # Add this line
+app.register_blueprint(auth.bp)
+app.register_blueprint(connections.bp)
+# Add this line
 
 
 @app.route('/', defaults={'path': ''})

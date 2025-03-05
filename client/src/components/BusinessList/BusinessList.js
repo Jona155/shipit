@@ -11,6 +11,7 @@ const BusinessList = () => {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { isLoggedIn, logout } = useAuth();
@@ -27,14 +28,11 @@ const BusinessList = () => {
       try {
         const token = localStorage.getItem('authToken');
         const response = await fetch(`/api/businesses`, {
-          headers: {
-            'authToken': token
-          }
+          headers: { 'authToken': token }
         });
 
         if (!response.ok) {
           if (response.status === 401) {
-            // Token is invalid or expired
             logout();
             navigate('/login');
             return;
@@ -55,8 +53,13 @@ const BusinessList = () => {
     fetchBusinesses();
   }, [isLoggedIn, navigate, logout]);
 
+  // Filter businesses by name, case-insensitive
+  const filteredBusinesses = businesses.filter(business =>
+    business.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (!isLoggedIn) {
-    return null; // or a loading indicator
+    return null;
   }
 
   if (loading) return <Loader />;
@@ -65,11 +68,18 @@ const BusinessList = () => {
   return (
     <div className={`business-list ${isRTL ? 'rtl' : 'ltr'}`}>
       <h1>{t('business_list')}</h1>
-      {businesses.length === 0 ? (
+      <input
+        type="text"
+        className="business-search"
+        placeholder="Search by business name"
+        value={searchTerm}
+        onChange={e => setSearchTerm(e.target.value)}
+      />
+      {filteredBusinesses.length === 0 ? (
         <p>{t('no_businesses_found')}</p>
       ) : (
         <ul>
-          {businesses.map(business => (
+          {filteredBusinesses.map(business => (
             <li key={business._id}>
               <Link to={`/shipit/${business._id}`}>
                 <h2>{business.name}</h2>

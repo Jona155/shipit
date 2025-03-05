@@ -5,6 +5,10 @@ class UsersDAL:
     def __init__(self, db):
         self.db = db
 
+    # New method added to retrieve a user by ID
+    def get_user(self, user_id):
+        return self.db.users.find_one({"_id": user_id})
+
     def get_business_users(self, business_id):
         pipeline = [
             {"$match": {"bid": business_id}},

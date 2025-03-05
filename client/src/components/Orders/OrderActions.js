@@ -1,3 +1,4 @@
+// This is not enabled, I think it useed to be enabled as part of the Orders.js component, this component enable selecting orders from the map.
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './OrderActions.css';
