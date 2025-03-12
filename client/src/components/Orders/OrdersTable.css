@@ -124,6 +124,44 @@
   background: #0056b3;
 }
 
+/* RTL Adjustments for Orders Table */
+.orders-table-container.rtl {
+  direction: rtl;
+}
+.orders-table-container.rtl th,
+.orders-table-container.rtl td {
+  text-align: right;
+}
+
+/* Courier Header for Delivery Group Sections */
+.courier-header {
+  background: #e9ecef; /* subtle grey background */
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #007bff; /* a blue underline to indicate section start */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Modern and Clean Finish Delivery Group Button */
+.finish-delivery-group-button {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.finish-delivery-group-button:hover {
+  background: #218838;
+}
+
+
 /* Responsive Table */
 @media screen and (max-width: 768px) {
   .orders-table {
@@ -132,3 +170,4 @@
     white-space: nowrap;
   }
 }
+

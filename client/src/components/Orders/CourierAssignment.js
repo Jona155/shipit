@@ -1,9 +1,3 @@
-// CourierAssignment.js
-// Updated to fix the tab reset issue.
-// Now, when the modal opens, form fields are reset (defaulting to "inhouse").
-// A separate useEffect watches for changes to courierType so that vendor connections are fetched
-// only when the user selects the "thirdparty" tab.
-
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import './CourierAssignment.css';
@@ -19,26 +13,25 @@ const CourierAssignment = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [availableCouriers, setAvailableCouriers] = useState([]);
   const [selectedCourier, setSelectedCourier] = useState('');
-  // New state for vendor connections (third-party couriers)
+  // We keep the vendor connections logic for third-party assignments
   const [vendorConnections, setVendorConnections] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState('');
-  const [courierType, setCourierType] = useState('inhouse'); // 'inhouse' or 'thirdparty'
+  const [courierType, setCourierType] = useState('inhouse');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // This useEffect runs only when the modal opens
+  // Fetch the in-house couriers from your users/business endpoint
   useEffect(() => {
     if (isOpen) {
-      // Reset form fields when the modal opens
       setSearchTerm('');
       setSelectedCourier('');
       setSelectedVendor('');
-      setCourierType('inhouse'); // default only when modal opens
+      setCourierType('inhouse'); // default tab
       fetchAvailableCouriers();
     }
   }, [isOpen, businessId]);
 
-  // Separate useEffect to fetch vendor connections when courierType becomes thirdparty
+  // Fetch vendor connections if the user chooses third-party tab
   useEffect(() => {
     if (courierType === 'thirdparty') {
       fetchVendorConnections();
@@ -49,15 +42,18 @@ const CourierAssignment = ({
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/business/${businessId}`);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/users/business/${businessId}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch couriers');
       }
       const data = await response.json();
-      const filtered = data.filter(user =>
-        user.profiles.messenger &&
-        user.profiles.messenger.isCurrentlyOnShift &&
-        user.profiles.messenger.isCurrentlyAvailable
+      const filtered = data.filter(
+        user =>
+          user.profiles.messenger &&
+          user.profiles.messenger.isCurrentlyOnShift &&
+          user.profiles.messenger.isCurrentlyAvailable
       );
       setAvailableCouriers(filtered);
     } catch (err) {
@@ -69,7 +65,9 @@ const CourierAssignment = ({
 
   const fetchVendorConnections = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/connections/business/${businessId}`);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/connections/business/${businessId}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch vendor connections');
       }
@@ -87,6 +85,7 @@ const CourierAssignment = ({
   );
 
   const handleAssign = async () => {
+    // Basic validations
     if (selectedOrders.length === 0) {
       alert(t('select_orders_and_courier'));
       return;
@@ -97,27 +96,35 @@ const CourierAssignment = ({
         alert(t('select_orders_and_courier'));
         return;
       }
-      const selectedCourierData = availableCouriers.find(courier => courier.uid === selectedCourier);
+      // Make sure the selected courier is in the list of available couriers
+      const selectedCourierData = availableCouriers.find(
+        courier => courier.uid === selectedCourier
+      );
       if (!selectedCourierData) {
         console.error('Selected courier not found');
         return;
       }
+
+      // -- NEW FLOW: POST to /api/delivery-group/assign --
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/update-status`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order_ids: selectedOrders,
-            status: 'ASSIGNED',
-            courier_id: selectedCourier,
-            courier_name: selectedCourierData.name,
-            third_party: false
-          }),
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/delivery-group/assign`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              courier_uid: selectedCourier,
+              order_ids: selectedOrders
+            })
+          }
+        );
         if (!response.ok) {
           throw new Error('Failed to assign courier');
         }
         const result = await response.json();
+
+        // result.updated_orders => The updated orders with "ASSIGNED" status
+        // result.delivery_group => The new delivery group document
         onAssignCourier(result.updated_orders);
         onClose();
       } catch (err) {
@@ -125,28 +132,34 @@ const CourierAssignment = ({
         setError(err.message);
       }
     } else if (courierType === 'thirdparty') {
+      // Existing logic for third-party assignments remains as-is
       if (!selectedVendor) {
         alert(t('select_orders_and_courier'));
         return;
       }
-      const selectedVendorData = vendorConnections.find(conn => conn.vendor_id === selectedVendor);
+      const selectedVendorData = vendorConnections.find(
+        conn => conn.vendor_id === selectedVendor
+      );
       if (!selectedVendorData) {
         console.error('Selected vendor not found');
         return;
       }
       try {
-        // For third party, keep status as "ACCEPTED" until the vendor approves
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/update-status`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order_ids: selectedOrders,
-            status: 'ACCEPTED',
-            courier_id: selectedVendorData.vendor_id,
-            courier_name: selectedVendorData.vendor_name,
-            third_party: true
-          }),
-        });
+        // We keep them in an "ACCEPTED" status until the vendor approves
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/orders/update-status`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              order_ids: selectedOrders,
+              status: 'ACCEPTED',
+              courier_id: selectedVendorData.vendor_id,
+              courier_name: selectedVendorData.vendor_name,
+              third_party: true
+            })
+          }
+        );
         if (!response.ok) {
           throw new Error('Failed to assign third party courier');
         }
@@ -182,6 +195,7 @@ const CourierAssignment = ({
               {t('use_third_party')}
             </button>
           </div>
+
           {courierType === 'inhouse' ? (
             isLoading ? (
               <p className="loading-text">{t('loading')}</p>
@@ -205,7 +219,9 @@ const CourierAssignment = ({
                 >
                   <option value="">{t('select_courier')}</option>
                   {filteredCouriers.map(courier => (
-                    <option key={courier.uid} value={courier.uid}>{courier.name}</option>
+                    <option key={courier.uid} value={courier.uid}>
+                      {courier.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -222,13 +238,16 @@ const CourierAssignment = ({
                 >
                   <option value="">{t('select_courier_company')}</option>
                   {vendorConnections.map(conn => (
-                    <option key={conn._id} value={conn.vendor_id}>{conn.vendor_name}</option>
+                    <option key={conn._id} value={conn.vendor_id}>
+                      {conn.vendor_name}
+                    </option>
                   ))}
                 </select>
               )}
             </div>
           )}
         </div>
+
         <div className="modal-footer">
           <button
             onClick={handleAssign}
@@ -240,7 +259,9 @@ const CourierAssignment = ({
           >
             {t('assign')} ({selectedOrders.length})
           </button>
-          <button onClick={onClose} className="secondary-button">{t('cancel')}</button>
+          <button onClick={onClose} className="secondary-button">
+            {t('cancel')}
+          </button>
         </div>
       </div>
     </div>

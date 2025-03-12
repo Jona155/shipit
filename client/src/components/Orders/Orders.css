@@ -122,3 +122,9 @@ button {
 .side-panel.visible {
   right: 0;
 }
+
+/* RTL Adjustments for Orders Container */
+.orders-container.rtl {
+  direction: rtl;
+  text-align: right;
+}

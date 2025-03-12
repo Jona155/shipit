@@ -1,10 +1,12 @@
 # orders_dal.py
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class OrdersDAL:
     def __init__(self, db):
-# I want this query to return all orders from type "ACCEPTED", "READY", "ASSIGNED", "COLLECTED" but only orders from the last day if their status is "Finished"
+        # I want this query to return all orders from type "ACCEPTED", "READY", "ASSIGNED", "COLLECTED"
+        # but only orders from the last day if their status is "Finished"
         self.db = db
+
     def get_business_orders(self, business_id, status='all'):
         # First, check if the requesting business is a vendor.
         business = self.db.businesses.find_one({"_id": business_id})
@@ -21,18 +23,13 @@ class OrdersDAL:
         else:
             # For a restaurant (or non‑vendor), match orders with bid equal to the business_id.
             match_criteria = {
-                "bid": business_id            }
+                "bid": business_id
+            }
 
         pipeline = [
             {"$match": match_criteria},
             {"$addFields": {
-                "latest_status": {"$arrayElemAt": ["$status.value", 0]},
-                "latest_status_date": {
-                    "$dateToString": {
-                        "format": "%Y-%m-%d",
-                        "date": {"$arrayElemAt": ["$status.timestamp", 0]}
-                    }
-                }
+                "latest_status": {"$arrayElemAt": ["$status.value", 0]}
             }}
         ]
 
@@ -56,10 +53,11 @@ class OrdersDAL:
         elif status == 'on_their_way':
             pipeline.append({"$match": {"latest_status": {"$in": ["ASSIGNED", "COLLECTED"]}}})
         elif status == 'finished':
-            today = datetime.now().strftime("%Y-%m-%d")
+            # Only return finished orders delivered within the last 24 hours.
+            cutoff = datetime.utcnow() - timedelta(hours=24)
             pipeline.extend([
                 {"$match": {"latest_status": "DELIVERED"}},
-                {"$match": {"latest_status_date": today}}
+                {"$match": {"status.0.timestamp": {"$gte": cutoff}}}
             ])
 
         pipeline.append({"$sort": {"status.0.timestamp": -1}})
@@ -94,7 +92,7 @@ class OrdersDAL:
         else:
             # Optionally, you could clear the sent_to_3rd_party field for non-third-party orders
             update_fields["sent_to_3rd_party"] = None
-        # Validate the new status to be one of the following: 'ACCEPTED', 'READY', ASSIGNED', 'COLLECTED', 'FINISHED'
+
         update_data = {
             "$set": update_fields,
             "$push": {
