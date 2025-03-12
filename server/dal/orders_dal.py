@@ -3,25 +3,18 @@ from datetime import datetime, timedelta
 
 class OrdersDAL:
     def __init__(self, db):
-        # I want this query to return all orders from type "ACCEPTED", "READY", "ASSIGNED", "COLLECTED"
-        # but only orders from the last day if their status is "Finished"
         self.db = db
 
-    def get_business_orders(self, business_id, status='all'):
-        # First, check if the requesting business is a vendor.
+    def get_business_orders(self, business_id, status='all', since=None):
         business = self.db.businesses.find_one({"_id": business_id})
         is_vendor = business and business.get("business_type") == "vendor"
 
         if is_vendor:
-            # For a vendor, match orders where:
-            # - third_party is true, and
-            # - sent_to_3rd_party equals the vendor's name.
             match_criteria = {
                 "third_party": True,
                 "sent_to_3rd_party": business.get("_id")
             }
         else:
-            # For a restaurant (or non‑vendor), match orders with bid equal to the business_id.
             match_criteria = {
                 "bid": business_id
             }
@@ -33,27 +26,19 @@ class OrdersDAL:
             }}
         ]
 
-        # If vendor, perform a $lookup to bring in the restaurant details.
-        if is_vendor:
-            pipeline.extend([
-                {"$lookup": {
-                    "from": "businesses",
-                    "localField": "bid",
-                    "foreignField": "_id",
-                    "as": "restaurant_info"
-                }},
-                {"$unwind": "$restaurant_info"},
-                {"$addFields": {
-                    "sent_from": "$restaurant_info.name"
-                }}
-            ])
+        # Apply incremental fetch filter if 'since' is provided
+        if since:
+            try:
+                since_dt = datetime.fromisoformat(since)
+                pipeline.append({"$match": {"status.0.timestamp": {"$gt": since_dt}}})
+            except ValueError:
+                pass
 
         if status == 'accepted':
             pipeline.append({"$match": {"latest_status": "ACCEPTED"}})
         elif status == 'on_their_way':
             pipeline.append({"$match": {"latest_status": {"$in": ["ASSIGNED", "COLLECTED"]}}})
         elif status == 'finished':
-            # Only return finished orders delivered within the last 24 hours.
             cutoff = datetime.utcnow() - timedelta(hours=24)
             pipeline.extend([
                 {"$match": {"latest_status": "DELIVERED"}},
@@ -64,7 +49,6 @@ class OrdersDAL:
 
         orders = list(self.db.orders.aggregate(pipeline))
 
-        # Format dates for each order.
         for order in orders:
             order['_id'] = str(order['_id'])
             for s in order['status']:
@@ -80,17 +64,14 @@ class OrdersDAL:
         return orders
 
     def update_orders_status(self, order_ids, new_status, courier_id, courier_name, third_party):
-        # Prepare the fields to update
         update_fields = {
             "courier_id": courier_id,
             "courier_name": courier_name,
             "third_party": third_party,
         }
-        # If this is a third party assignment, update the sent_to_3rd_party field with the vendor's id
         if third_party:
             update_fields["sent_to_3rd_party"] = courier_id
         else:
-            # Optionally, you could clear the sent_to_3rd_party field for non-third-party orders
             update_fields["sent_to_3rd_party"] = None
 
         update_data = {
@@ -101,15 +82,12 @@ class OrdersDAL:
                         "value": new_status,
                         "timestamp": datetime.utcnow()
                     }],
-                    "$position": 0  # Insert at the beginning so it becomes the latest status
+                    "$position": 0
                 }
             }
         }
 
-        # Update all orders matching the given order_ids.
         self.db.orders.update_many({"_id": {"$in": order_ids}}, update_data)
-
-        # Retrieve and return the updated orders.
         updated_orders = list(self.db.orders.find({"_id": {"$in": order_ids}}))
         for order in updated_orders:
             order['_id'] = str(order['_id'])
