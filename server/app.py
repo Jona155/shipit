@@ -1,7 +1,7 @@
 from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 import os
-from api import businesses, users, orders, auth, connections
+from api import businesses, users, orders, auth, connections, delivery_group
 from services.database import init_db
 import logging
 
@@ -21,6 +21,8 @@ app.register_blueprint(orders.bp)
 app.register_blueprint(auth.bp)
 app.register_blueprint(connections.bp)
 # Add this line
+app.register_blueprint(delivery_group.bp)
+
 
 
 @app.route('/', defaults={'path': ''})

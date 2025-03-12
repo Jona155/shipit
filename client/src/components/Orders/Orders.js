@@ -1,5 +1,5 @@
 // Orders.js
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import './Orders.css';
 import OrdersTable from './OrdersTable';
@@ -17,7 +17,9 @@ const Orders = () => {
 
   // State declarations
   const [orders, setOrders] = useState([]);
+  const [deliveryGroups, setDeliveryGroups] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('accepted');
@@ -25,46 +27,110 @@ const Orders = () => {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedCourier, setSelectedCourier] = useState('');
   const [isSelectingForRoute, setIsSelectingForRoute] = useState(false);
-  // New state for view toggle: 'table' or 'map'
   const [activeView, setActiveView] = useState('table');
-  const [updateTrigger, setUpdateTrigger] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [showOrderForm, setShowOrderForm] = useState(false);
 
-  // Fetch orders from API
-  // I want fetch the orders every few seconds. and the query should be optimized, meaning I want to fetch only new orders, and not query for the entire amount of 'ACCEPTED' orders, maybe an anchor could be the timestamp of the last order. however, it will be a bit problametic, with the courier company flow.
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
+  // Ref to hold the latest orders for incremental polling
+  const ordersRef = useRef(orders);
+  useEffect(() => {
+    ordersRef.current = orders;
+  }, [orders]);
+
+  // Define fetchOrders function.
+  // When incremental is true, do not set the loading flag.
+  const fetchOrders = useCallback(async (incremental = false) => {
+    if (!incremental) {
+      setLoading(true);
+    }
+    let url = `${process.env.REACT_APP_API_URL}/api/orders/business/${businessId}`;
+    if (incremental && ordersRef.current.length > 0) {
+      // Use the timestamp of the most recent order for incremental fetch
+      const lastTimestamp = ordersRef.current[0].status[0].timestamp;
+      url += `?since=${encodeURIComponent(lastTimestamp)}`;
+    }
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/business/${businessId}`);
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch orders');
       const data = await response.json();
-      setOrders(data);
+      if (incremental) {
+        // Merge new orders into the existing state (update if needed)
+        setOrders(prevOrders => {
+          const ordersMap = new Map();
+          prevOrders.forEach(order => ordersMap.set(order._id, order));
+          data.forEach(order => ordersMap.set(order._id, order));
+          return Array.from(ordersMap.values()).sort(
+            (a, b) => new Date(b.status[0].timestamp) - new Date(a.status[0].timestamp)
+          );
+        });
+      } else {
+        setOrders(data);
+      }
       setError(null);
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (!incremental) {
+        setLoading(false);
+        setInitialLoad(false);
+      }
     }
   }, [businessId]);
 
+  // Polling interval: fetch new orders every 5 seconds without interrupting the UI
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOrders(true);
+    }, 86400000);
+    return () => clearInterval(interval);
+  }, [businessId, fetchOrders]);
+
+  // Initial fetch of orders
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Filter orders based on activeTab and search term
+  // Fetch delivery groups for "on_their_way" tab
+  useEffect(() => {
+    async function fetchDeliveryGroups() {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/delivery-group/assigned?bid=${businessId}`);
+        if (!response.ok) throw new Error('Failed to fetch delivery groups');
+        const data = await response.json();
+        setDeliveryGroups(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    if (activeTab === 'on_their_way') {
+      fetchDeliveryGroups();
+    }
+  }, [businessId, activeTab]);
+
+  // Merge orders and delivery groups for "on_their_way" tab
   const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      const status = getOrderStatus(order);
+    let items = orders;
+    if (activeTab === 'on_their_way') {
+      const ordersWithType = orders.map(o => ({ ...o, type: 'order' }));
+      const groupsWithType = deliveryGroups.map(g => ({ ...g, type: 'deliveryGroup' }));
+      items = [...ordersWithType, ...groupsWithType];
+    }
+    return items.filter(item => {
+      let status;
+      if (item.type === 'deliveryGroup') {
+        status = 'on_their_way';
+      } else {
+        status = getOrderStatus(item);
+      }
       const matchesSearch =
-        (order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (order.address?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (order.comments_for_order?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.address?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.comments_for_order?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         searchTerm === '';
       return status === activeTab && matchesSearch;
     });
-  }, [orders, activeTab, searchTerm, updateTrigger]);
+  }, [orders, deliveryGroups, activeTab, searchTerm]);
 
   // Action handlers
   const handleSelectOrder = orderId => {
@@ -111,7 +177,6 @@ const Orders = () => {
     setIsSelectingForRoute(false);
     setIsAssignModalOpen(false);
     showAlertMessage(t('orders_assigned_success'));
-    setUpdateTrigger(prev => prev + 1);
   }, [t, showAlertMessage]);
 
   const handleFinishOrder = useCallback(async orderId => {
@@ -125,12 +190,17 @@ const Orders = () => {
 
   const handleReturnToOnTheirWay = useCallback(async orderId => {
     try {
-      await updateOrderStatus(orderId, 'COLLECTED');
-      showAlertMessage(t('order_returned_to_on_their_way'));
+      if (activeTab === 'finished') {
+        await updateOrderStatus(orderId, 'ACCEPTED');
+        showAlertMessage(t('order_returned_to_accepted'));
+      } else {
+        await updateOrderStatus(orderId, 'COLLECTED');
+        showAlertMessage(t('order_returned_to_on_their_way'));
+      }
     } catch (err) {
       setError(err.message);
     }
-  }, [updateOrderStatus, t, showAlertMessage]);
+  }, [activeTab, updateOrderStatus, t, showAlertMessage]);
 
   const handleUnassignOrder = useCallback(async orderId => {
     try {
@@ -141,15 +211,21 @@ const Orders = () => {
     }
   }, [updateOrderStatus, t, showAlertMessage]);
 
-  const handleFinishRoute = courier => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.courier === courier && order.latest_status === 'on_their_way'
-          ? { ...order, latest_status: 'finished' }
-          : order
-      )
-    );
-    showAlertMessage(t('route_orders_finished'));
+  const handleFinishDeliveryGroup = async (deliveryGroupId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/delivery-group/finish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delivery_group_id: deliveryGroupId }),
+      });
+      if (!response.ok) throw new Error('Failed to finish delivery group');
+      await response.json();
+      showAlertMessage(t('delivery_group_finished'));
+      setDeliveryGroups(prev => prev.filter(group => group._id !== deliveryGroupId));
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
   };
 
   const handleAddOrder = newOrder => {
@@ -169,12 +245,13 @@ const Orders = () => {
     setSelectedOrders([]);
   };
 
-  if (loading) return <div>{t('loading')}</div>;
+  // During the initial load, show a full-page loader.
+  // Once the orders are loaded, incremental updates happen seamlessly.
+  if (initialLoad && loading) return <div>{t('loading')}</div>;
   if (error) return <div>{t('error')}: {error}</div>;
 
   return (
     <div className={`orders-container ${isRTL ? 'rtl' : 'ltr'}`}>
-      {/* Toggle Header */}
       <div className="view-toggle-header">
         <button
           className={`view-toggle-button ${activeView === 'table' ? 'active' : ''}`}
@@ -189,8 +266,6 @@ const Orders = () => {
           {t('orders_map_view', { defaultValue: 'Map View' })}
         </button>
       </div>
-
-      {/* Render the selected view */}
       {activeView === 'table' && (
         <div className="orders-table-wrapper">
           <OrdersTable
@@ -202,7 +277,8 @@ const Orders = () => {
             onFinishOrder={handleFinishOrder}
             onUnassignOrder={handleUnassignOrder}
             onReturnToOnTheirWay={handleReturnToOnTheirWay}
-            onFinishRoute={handleFinishRoute}
+            onFinishRoute={handleFinishDeliveryGroup}
+            onFinishDeliveryGroup={handleFinishDeliveryGroup}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             onAddOrder={() => setShowOrderForm(true)}
@@ -224,7 +300,6 @@ const Orders = () => {
           />
         </div>
       )}
-
       <button onClick={() => setIsAssignModalOpen(true)} className="assign-courier-button">
         {t('assign_courier')}
       </button>
