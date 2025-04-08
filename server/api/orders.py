@@ -1,4 +1,6 @@
 # orders.py
+import uuid
+
 from flask import Blueprint, jsonify, request
 from services.database import get_db
 import logging
@@ -17,6 +19,36 @@ def get_business_orders(business_id):
         return jsonify(orders), 200
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@bp.route('/assign', methods=['POST'])
+def assign_courier():
+    try:
+        db = get_db()
+        orders_dal = OrdersDAL(db)
+        data = request.json
+        logging.info(f"Assign courier request data: {data}")
+        
+        order_ids = data.get('orderIds', [])
+        courier_id = data.get('courierId')
+        courier_name = data.get('courierName', 'Unknown Courier')  # Get name directly from frontend
+        business_id = data.get('businessId')
+        
+        logging.info(f"Assigning courier ID={courier_id}, Name={courier_name}")
+
+        if not order_ids or not courier_id:
+            logging.error("Missing order_ids or courier_id in request")
+            return jsonify({"error": "Missing order_ids or courier_id"}), 400
+        
+        # Update the orders with the ASSIGNED status using courier info directly
+        updated_orders = orders_dal.update_orders_status(order_ids, "ASSIGNED", courier_id, courier_name, False)
+        logging.info(f"Updated {len(updated_orders)} orders")
+        
+        return jsonify(updated_orders), 200
+    except Exception as e:
+        logging.error(f"Error assigning courier: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 @bp.route('/update-status', methods=['PUT', 'POST'])
@@ -42,3 +74,57 @@ def update_order_status():
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+# server/api/orders.py
+@bp.route('', methods=['POST'])
+def create_order():
+    try:
+        db = get_db()
+        orders_dal = OrdersDAL(db)
+        data = request.json
+
+        # Add required fields
+        data['_id'] = str(uuid.uuid4())
+
+        # Insert the order
+        result = orders_dal.create_order(data)
+        return jsonify(result), 201
+    except Exception as e:
+        logging.error(f"Error creating order: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# Debug endpoint to help troubleshoot courier lookup
+@bp.route('/debug/courier/<courier_id>', methods=['GET'])
+def debug_courier_lookup(courier_id):
+    try:
+        db = get_db()
+        logging.info(f"Debugging courier lookup for id: {courier_id}")
+        
+        # Check in users collection by _id
+        courier_by_id = db.users.find_one({"_id": courier_id})
+        
+        # Check in users collection by uid
+        courier_by_uid = db.users.find_one({"uid": courier_id})
+        
+        # Check if it's in the business_users collection
+        business_user = db.business_users.find_one({"user_id": courier_id})
+        
+        # Get a sample of users
+        sample_users = list(db.users.find().limit(5))
+        sample_users_data = [{k: v for k, v in u.items() if k in ['_id', 'uid', 'name']} for u in sample_users]
+        
+        return jsonify({
+            "courier_id": courier_id,
+            "found_by_id": courier_by_id is not None,
+            "found_by_uid": courier_by_uid is not None,
+            "found_in_business_users": business_user is not None,
+            "courier_by_id": {k: v for k, v in courier_by_id.items() if k in ['_id', 'uid', 'name']} if courier_by_id else None,
+            "courier_by_uid": {k: v for k, v in courier_by_uid.items() if k in ['_id', 'uid', 'name']} if courier_by_uid else None,
+            "business_user": business_user,
+            "sample_users": sample_users_data
+        }), 200
+    except Exception as e:
+        logging.error(f"Error in debug endpoint: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500

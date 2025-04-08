@@ -35,10 +35,14 @@ def assign_courier_to_orders():
         if not courier_uid or not order_ids:
             return jsonify({"error": "Missing courier_uid or order_ids"}), 400
 
-        # 1) Update the courier's isWhileMission to true
+        # 1) Update the courier's status - set isWhileMission to true and isCurrentlyAvailable to false
         db.user_businesses.update_one(
             {"uid": courier_uid},
-            {"$set": {"profiles.messenger.isWhileMission": True}}
+            {"$set": {
+                "profiles.messenger.isWhileMission": True,
+                "profiles.messenger.isCurrentlyAvailable": False,
+                "profiles.messenger.lastNonAvailableTimestamp": datetime.utcnow()
+            }}
         )
 
         # Retrieve the courier's name from the users collection
@@ -110,6 +114,7 @@ def finish_delivery_group():
     Finishes a delivery group row:
     - Updates the delivery group status to "FINISHED"
     - Updates all orders in its route to status "DELIVERED"
+    - Resets courier's availability status
 
     Expects JSON:
     {
@@ -123,19 +128,38 @@ def finish_delivery_group():
         if not dg_id:
             return jsonify({"error": "Missing delivery_group_id"}), 400
 
+        # Retrieve the delivery group document to get order IDs and courier ID
+        dg = db.delivery_groups.find_one({"_id": dg_id})
+        if not dg:
+            return jsonify({"error": "Delivery group not found"}), 404
+
         # Update the delivery group status to FINISHED
         result = db.delivery_groups.update_one({"_id": dg_id}, {"$set": {"status": "FINISHED"}})
         if result.modified_count == 0:
             return jsonify({"error": "Delivery group not found or already finished"}), 404
 
-        # Retrieve the delivery group document to get order IDs
-        dg = db.delivery_groups.find_one({"_id": dg_id})
         order_ids = [item["orderId"] for item in dg.get("route", [])]
+        courier_uid = dg.get("messengerId")
 
+        # Update orders to DELIVERED status
         db.orders.update_many(
             {"_id": {"$in": order_ids}},
-            {"$push": {"status": {"$each": [{"value": "DELIVERED", "timestamp": datetime.utcnow()}], "$position": 0}}}
+            {
+                "$push": {"status": {"$each": [{"value": "DELIVERED", "timestamp": datetime.utcnow()}], "$position": 0}},
+                "$set": {"latest_status": "DELIVERED"}
+            }
         )
+
+        # Reset courier's status - set isWhileMission to false and isCurrentlyAvailable to true
+        if courier_uid:
+            db.user_businesses.update_one(
+                {"uid": courier_uid},
+                {"$set": {
+                    "profiles.messenger.isWhileMission": False,
+                    "profiles.messenger.isCurrentlyAvailable": True,
+                    "profiles.messenger.lastAvailableTimestamp": datetime.utcnow()
+                }}
+            )
 
         return jsonify({"message": "Delivery group finished", "delivery_group_id": dg_id}), 200
     except Exception as e:

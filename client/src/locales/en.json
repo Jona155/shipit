@@ -2,6 +2,9 @@
   "orders_title": "Orders Management",
   "orders_accepted": "Accepted",
   "orders_on_their_way": "On Their Way",
+  "accepted": "Accepted",
+  "on_their_way": "On Their Way",
+  "finished": "Finished",
   "orders_finished": "Finished",
   "orders_new": "New Order",
   "orders_assign": "Assign Selected Orders",
@@ -130,7 +133,25 @@
   "business_list": "My Business",
   "nav_businesses": "My Business",
 
-  "business_dashboard": "Shipit"
-
+  "business_dashboard": "Shipit",
+  
+  "switch_to_cards": "Switch to Cards View",
+  
+  "assigned": "Assigned",
+  "collected": "Collected",
+  "delivered": "Delivered",
+  
+  "orders_count": "{{count}} Orders",
+  "orders_in_route": "Orders in Route",
+  "assigned_at": "Assigned at",
+  "missing_order_data": "Order {{id}} (data not available)",
+  "no_active_delivery_groups": "No active delivery groups",
+  "no_delivery_groups_found_for_search": "No delivery groups found for: '{{search}}'",
+  "unknown_courier": "Unknown Courier",
+  "expand": "Expand",
+  "collapse": "Collapse",
+  "unknown": "Unknown",
+  "orders": "orders",
+  "orders_count_simple": "{{count}} orders"
 
 }

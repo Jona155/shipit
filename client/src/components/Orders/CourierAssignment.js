@@ -7,7 +7,8 @@ const CourierAssignment = ({
   onClose,
   selectedOrders,
   onAssignCourier,
-  businessId
+  businessId,
+  showAlertMessage
 }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,14 +50,38 @@ const CourierAssignment = ({
         throw new Error('Failed to fetch couriers');
       }
       const data = await response.json();
+      
+      console.log('All users fetched:', data.length);
+      console.log('First few users:', data.slice(0, 3).map(u => ({ 
+        _id: u._id,  // This is the user_businesses _id
+        uid: u.uid,  // This is the users collection _id we need
+        name: u.name,
+        onShift: u.profiles?.messenger?.isCurrentlyOnShift,
+        available: u.profiles?.messenger?.isCurrentlyAvailable
+      })));
+      
       const filtered = data.filter(
         user =>
-          user.profiles.messenger &&
+          user.profiles?.messenger &&
           user.profiles.messenger.isCurrentlyOnShift &&
           user.profiles.messenger.isCurrentlyAvailable
-      );
+      ).map(user => ({
+        ...user,
+        // Store both IDs to use the correct one later
+        _id: user._id,        // user_businesses _id
+        uid: user.uid         // users collection _id
+      }));
+      
+      console.log('Filtered available couriers:', filtered.length);
+      console.log('Available couriers:', filtered.map(u => ({ 
+        _id: u._id,
+        uid: u.uid,
+        name: u.name
+      })));
+      
       setAvailableCouriers(filtered);
     } catch (err) {
+      console.error('Error fetching couriers:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -85,91 +110,64 @@ const CourierAssignment = ({
   );
 
   const handleAssign = async () => {
-    // Basic validations
-    if (selectedOrders.length === 0) {
-      alert(t('select_orders_and_courier'));
+    if (courierType === 'inhouse' && !selectedCourier) {
+      showAlertMessage(t('select_courier'));
       return;
     }
 
-    if (courierType === 'inhouse') {
-      if (!selectedCourier) {
-        alert(t('select_orders_and_courier'));
-        return;
+    try {
+      // Very detailed logging for debugging
+      console.log('===== DEBUGGING COURIER ASSIGNMENT =====');
+      console.log('Selected courier ID:', selectedCourier);
+      console.log('Available couriers:', availableCouriers);
+      console.log('Selected orders:', selectedOrders);
+      
+      // Find the selected courier object from available couriers
+      const selectedCourierObj = availableCouriers.find(c => c._id === selectedCourier);
+      console.log('Selected courier object:', selectedCourierObj);
+      
+      if (!selectedCourierObj) {
+        throw new Error('Selected courier not found in available couriers');
       }
-      // Make sure the selected courier is in the list of available couriers
-      const selectedCourierData = availableCouriers.find(
-        courier => courier.uid === selectedCourier
-      );
-      if (!selectedCourierData) {
-        console.error('Selected courier not found');
-        return;
+      
+      // Log the exact payload we're sending - now using delivery-group format
+      // Use the uid (users collection _id) instead of the user_businesses _id
+      const payload = {
+        courier_uid: selectedCourierObj.uid,  // Use the uid which maps to users collection _id
+        order_ids: selectedOrders
+      };
+      console.log('Sending payload:', JSON.stringify(payload, null, 2));
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/delivery-group/assign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+      
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          errorData = { error: responseText };
+        }
+        throw new Error(`Failed to assign orders: ${errorData.error || response.statusText}`);
       }
 
-      // -- NEW FLOW: POST to /api/delivery-group/assign --
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/delivery-group/assign`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              courier_uid: selectedCourier,
-              order_ids: selectedOrders
-            })
-          }
-        );
-        if (!response.ok) {
-          throw new Error('Failed to assign courier');
-        }
-        const result = await response.json();
-
-        // result.updated_orders => The updated orders with "ASSIGNED" status
-        // result.delivery_group => The new delivery group document
-        onAssignCourier(result.updated_orders);
-        onClose();
-      } catch (err) {
-        console.error('Error assigning courier:', err);
-        setError(err.message);
-      }
-    } else if (courierType === 'thirdparty') {
-      // Existing logic for third-party assignments remains as-is
-      if (!selectedVendor) {
-        alert(t('select_orders_and_courier'));
-        return;
-      }
-      const selectedVendorData = vendorConnections.find(
-        conn => conn.vendor_id === selectedVendor
-      );
-      if (!selectedVendorData) {
-        console.error('Selected vendor not found');
-        return;
-      }
-      try {
-        // We keep them in an "ACCEPTED" status until the vendor approves
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/orders/update-status`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order_ids: selectedOrders,
-              status: 'ACCEPTED',
-              courier_id: selectedVendorData.vendor_id,
-              courier_name: selectedVendorData.vendor_name,
-              third_party: true
-            })
-          }
-        );
-        if (!response.ok) {
-          throw new Error('Failed to assign third party courier');
-        }
-        const result = await response.json();
-        onAssignCourier(result.updated_orders);
-        onClose();
-      } catch (err) {
-        console.error('Error assigning third party courier:', err);
-        setError(err.message);
-      }
+      const data = JSON.parse(responseText);
+      console.log('Assignment succeeded:', data);
+      // Pass the updated_orders from the response to maintain compatibility with parent component
+      onAssignCourier(data.updated_orders);
+      onClose();
+    } catch (error) {
+      console.error('Assignment error:', error);
+      showAlertMessage(t('error_assigning_orders'));
     }
   };
 
@@ -186,13 +184,13 @@ const CourierAssignment = ({
               className={`tab-button ${courierType === 'inhouse' ? 'active' : ''}`}
               onClick={() => setCourierType('inhouse')}
             >
-              {t('use_inhouse_courier')}
+              {t('courier')}
             </button>
             <button
               className={`tab-button ${courierType === 'thirdparty' ? 'active' : ''}`}
               onClick={() => setCourierType('thirdparty')}
             >
-              {t('use_third_party')}
+              {t('dispatcher')}
             </button>
           </div>
 
@@ -208,7 +206,7 @@ const CourierAssignment = ({
                 <input
                   type="text"
                   className="input-field courier-search"
-                  placeholder={t('search_couriers')}
+                  placeholder={t('search_users')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -219,7 +217,7 @@ const CourierAssignment = ({
                 >
                   <option value="">{t('select_courier')}</option>
                   {filteredCouriers.map(courier => (
-                    <option key={courier.uid} value={courier.uid}>
+                    <option key={courier._id} value={courier._id}>
                       {courier.name}
                     </option>
                   ))}
@@ -236,7 +234,7 @@ const CourierAssignment = ({
                   onChange={(e) => setSelectedVendor(e.target.value)}
                   className="input-field courier-dropdown"
                 >
-                  <option value="">{t('select_courier_company')}</option>
+                  <option value="">{t('select_courier')}</option>
                   {vendorConnections.map(conn => (
                     <option key={conn._id} value={conn.vendor_id}>
                       {conn.vendor_name}

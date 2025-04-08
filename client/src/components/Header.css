@@ -1,12 +1,18 @@
-/* Updated Header.css */
+/* Modern Header Styles */
 .app-header {
   background-color: #ffffff;
   color: #333;
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.app-header.scrolled {
+  padding: 0.5rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .header-content {
@@ -17,64 +23,134 @@
   align-items: center;
 }
 
+.header-logo {
+  display: flex;
+  align-items: center;
+}
+
 .app-title {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
 }
 
 .home-link {
-  color: inherit;
+  color: #3a86ff;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .home-link:hover {
-  color: #007bff;
+  color: #2a66cf;
+}
+
+/* Navigation */
+.main-nav {
+  transition: all 0.3s ease;
 }
 
 .main-nav ul {
   list-style: none;
   display: flex;
-  align-items: center; /* Ensure vertical alignment for all items */
-  gap: 1.5rem;
+  align-items: center;
+  gap: 1.2rem;
   margin: 0;
   padding: 0;
 }
 
-/* Make each li a flex container for consistent alignment */
 .main-nav li {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .main-nav a {
   color: #555;
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s ease;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .main-nav a:hover {
-  color: #007bff;
+  color: #3a86ff;
+  background-color: rgba(58, 134, 255, 0.05);
 }
 
-/* Updated logout button to use inline-flex for vertical centering */
+.main-nav a.active {
+  color: #3a86ff;
+  background-color: rgba(58, 134, 255, 0.08);
+}
+
+.main-nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #3a86ff;
+}
+
+/* Logout button */
+.logout-item {
+  margin-left: 0.75rem;
+}
+
 .logout-button {
   background-color: transparent;
-  border: 1px solid #007bff;
-  color: #007bff;
+  border: 1px solid #3a86ff;
+  color: #3a86ff;
   padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
+  font-weight: 500;
 }
 
 .logout-button:hover {
-  background-color: #007bff;
+  background-color: #3a86ff;
   color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(58, 134, 255, 0.2);
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 21px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10;
+}
+
+.mobile-menu-toggle .bar {
+  height: 3px;
+  width: 100%;
+  background-color: #3a86ff;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle.active .bar:first-child {
+  transform: translateY(9px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active .bar:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active .bar:last-child {
+  transform: translateY(-9px) rotate(-45deg);
 }
 
 /* RTL styles */
@@ -82,6 +158,87 @@
   direction: rtl;
 }
 
-.app-header.rtl .header-content {
-  flex-direction: row-reverse;
+.app-header.rtl .logout-item {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+/* Responsive styles */
+@media (max-width: 880px) {
+  .app-header {
+    padding: 0.75rem 1.5rem;
+  }
+  
+  .header-content {
+    position: relative;
+  }
+  
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  
+  .main-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    width: 100%;
+    z-index: 10;
+  }
+  
+  .main-nav.open {
+    max-height: 500px;
+    padding: 1rem 0;
+  }
+  
+  .main-nav ul {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .main-nav li {
+    width: 100%;
+  }
+  
+  .main-nav a {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0;
+  }
+  
+  .main-nav a.active::after {
+    display: none;
+  }
+  
+  .main-nav a.active {
+    background-color: rgba(58, 134, 255, 0.1);
+  }
+  
+  .logout-item {
+    margin: 0.5rem 1.5rem;
+    width: calc(100% - 3rem);
+  }
+  
+  .logout-button {
+    width: 50%;
+    justify-content: center;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .app-title {
+    font-size: 1.25rem;
+  }
 }

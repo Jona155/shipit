@@ -13,69 +13,53 @@ body {
 
 /* Main Container */
 .orders-container {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  position: relative;
+  padding-bottom: 80px; /* Add padding to ensure content isn't hidden behind the fixed button */
 }
 
 /* View Toggle Header */
 .view-toggle-header {
   display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-  background: #e9ecef;
-  border-radius: 8px;
-  overflow: hidden;
+  padding: 10px;
+  background-color: white;
+  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 10px;
 }
 
 .view-toggle-button {
-  flex: 1;
-  padding: 1rem;
-  background: transparent;
+  padding: 8px 16px;
+  margin-right: 10px;
   border: none;
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #495057;
+  background-color: #f0f0f0;
+  border-radius: 4px;
   cursor: pointer;
-}
-
-.view-toggle-button:hover {
-  background: #dee2e6;
+  transition: all 0.2s;
 }
 
 .view-toggle-button.active {
-  background: #007bff;
-  color: #fff;
+  background-color: #3a86ff;
+  color: white;
 }
 
 /* View Wrappers */
-.orders-table-wrapper,
+.orders-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+  border-radius: 8px;
+  background-color: #fafafa;
+  padding-bottom: 20px;
+}
+
 .orders-map-wrapper {
-  background: #fff;
-  height: 500px;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1.5rem;
-}
-
-/* Ensure inner components fill their container */
-.orders-table-wrapper > *,
-.orders-map-wrapper > * {
-  width: 100%;
+  flex: 1;
+  position: relative;
   height: 100%;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .orders-table-wrapper,
-  .orders-map-wrapper {
-    max-height: 400px;
-    padding: 1rem;
-  }
 }
 
 /* Button Styles */
@@ -87,44 +71,82 @@ button {
 }
 
 .assign-courier-button {
-  background: #28a745;
-  color: #fff;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  display: block;
-  margin: 1rem auto;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 24px;
+  background-color: #3a86ff;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 9999; /* Ensure it's above everything */
+  transition: all 0.2s;
+  font-size: 16px;
 }
 
 .assign-courier-button:hover {
-  background: #218838;
+  background-color: #2a66cf;
   transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Side Panel */
 .side-panel {
   position: fixed;
   top: 0;
-  right: -100%;
-  width: 100%;
-  max-width: 400px;
+  right: -400px;
+  width: 400px;
   height: 100%;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  background-color: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   transition: right 0.3s ease;
-  padding: 1.5rem;
+  z-index: 1000;
   overflow-y: auto;
-  z-index: 1100;
 }
 
 .side-panel.visible {
   right: 0;
 }
 
-/* RTL Adjustments for Orders Container */
-.orders-container.rtl {
-  direction: rtl;
-  text-align: right;
+/* RTL Support */
+.rtl .assign-courier-button {
+  right: auto;
+  left: 20px;
+}
+
+.rtl .side-panel {
+  right: auto;
+  left: -400px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.rtl .side-panel.visible {
+  right: auto;
+  left: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .view-toggle-button {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .assign-courier-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .side-panel {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .rtl .side-panel {
+    left: -100%;
+    right: auto;
+  }
 }

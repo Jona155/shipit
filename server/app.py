@@ -1,15 +1,26 @@
-from flask import Flask, send_from_directory, jsonify
-from flask_cors import CORS
 import os
-from api import businesses, users, orders, auth, connections, delivery_group
-from services.database import init_db
+from dotenv import load_dotenv
 import logging
-
-app = Flask(__name__, static_folder='../client/build')
-CORS(app)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+# Load environment variables from .env file in parent directory
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+logging.info(f"Loading .env file from: {env_path}")
+load_dotenv(dotenv_path=env_path)
+
+# Debug: Print environment variables
+logging.info(f"MONGODB_URI: {os.environ.get('MONGODB_URI')}")
+logging.info(f"DATABASE_NAME: {os.environ.get('DATABASE_NAME')}")
+
+from flask import Flask, send_from_directory, jsonify
+from flask_cors import CORS
+from api import businesses, users, orders, auth, connections, delivery_group
+from services.database import init_db
+
+app = Flask(__name__, static_folder='../client/build')
+CORS(app)
 
 # Initialize database
 init_db(app)
@@ -43,5 +54,5 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5001))
     app.run(host='0.0.0.0', port=port)  
