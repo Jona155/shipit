@@ -1,17 +1,30 @@
 import os
-from dotenv import load_dotenv
 import logging
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Load environment variables from .env file in parent directory
-env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
-logging.info(f"Loading .env file from: {env_path}")
-load_dotenv(dotenv_path=env_path)
+# First check for environment variables (these take precedence)
+mongodb_uri = os.environ.get('MONGODB_URI')
+database_name = os.environ.get('DATABASE_NAME')
+
+# Load .env only in local development if environment variables aren't set
+if not mongodb_uri or not database_name:
+    env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+    if os.path.exists(env_path):
+        logging.info("Environment variables not fully set, loading from .env file")
+        load_dotenv(dotenv_path=env_path)
+    else:
+        logging.info("No .env file found and environment variables not fully set")
 
 # Debug: Print environment variables
-logging.info(f"MONGODB_URI: {os.environ.get('MONGODB_URI')}")
+mongodb_uri = os.environ.get('MONGODB_URI')
+logging.info(f"MONGODB_URI exists: {mongodb_uri is not None}")
+if mongodb_uri:
+    # Log only partial URI to avoid security issues
+    masked_uri = mongodb_uri[:15] + "..." if mongodb_uri else "Not set"
+    logging.info(f"MONGODB_URI (masked): {masked_uri}")
 logging.info(f"DATABASE_NAME: {os.environ.get('DATABASE_NAME')}")
 
 from flask import Flask, send_from_directory, jsonify
@@ -23,7 +36,13 @@ app = Flask(__name__, static_folder='../client/build')
 CORS(app)
 
 # Initialize database
-init_db(app)
+try:
+    init_db(app)
+    logging.info("Database initialized successfully")
+except Exception as e:
+    logging.error(f"Failed to initialize database: {str(e)}")
+    # We'll let the app continue and fail on actual requests
+    # rather than preventing startup completely
 
 # Register blueprints
 app.register_blueprint(businesses.bp)
@@ -31,10 +50,7 @@ app.register_blueprint(users.bp)
 app.register_blueprint(orders.bp)
 app.register_blueprint(auth.bp)
 app.register_blueprint(connections.bp)
-# Add this line
 app.register_blueprint(delivery_group.bp)
-
-
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
