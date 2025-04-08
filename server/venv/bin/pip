@@ -1,4 +1,4 @@
-#!/Users/jonathanmichaeli/Desktop/ReactApp/server/venv/bin/python3.12
+#!/Users/jonathanmichaeli/Desktop/ReactApp/server/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

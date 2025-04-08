@@ -4,9 +4,78 @@
 .orders-table-container {
   background: #fff;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-y: auto;
+  max-height: 600px;
   margin: 1rem 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* RTL Support */
+.orders-table-container.rtl {
+  direction: rtl;
+}
+
+.orders-table-container.rtl th,
+.orders-table-container.rtl td {
+  text-align: right;
+}
+
+.orders-table-container.rtl .search-input {
+  text-align: right;
+  direction: rtl;
+}
+
+.orders-table-container.rtl .tabs {
+  flex-direction: row-reverse;
+}
+
+.orders-table-container.rtl .tab {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+.orders-table-container.rtl .orders-table-header {
+  flex-direction: row-reverse;
+}
+
+.orders-table-container.rtl .build-route-button,
+.orders-table-container.rtl .finish-route-button,
+.orders-table-container.rtl .finish-delivery-group-button,
+.orders-table-container.rtl .add-order-button {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+.orders-table-container.rtl .courier-header {
+  flex-direction: row-reverse;
+}
+
+.orders-table-container.rtl .finish-order-button,
+.orders-table-container.rtl .unassign-order-button,
+.orders-table-container.rtl .return-to-route-button {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+.orders-table-container.rtl .orders-table {
+  direction: rtl;
+}
+
+.orders-table-container.rtl .orders-table th,
+.orders-table-container.rtl .orders-table td {
+  text-align: right;
+}
+
+.orders-table-container.rtl .orders-table .partner-cell {
+  text-align: center;
+}
+
+.orders-table-container.rtl .orders-table .action-cell {
+  text-align: left;
+}
+
+.orders-table-container.rtl .orders-table .checkbox-cell {
+  text-align: center;
 }
 
 /* Table Header */
@@ -34,12 +103,22 @@
   gap: 0.5rem;
 }
 
+.tabs.rtl {
+  flex-direction: row-reverse;
+}
+
 .tab {
   padding: 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   font-size: 0.95rem;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tabs.rtl .tab {
+  margin-left: 0.5rem;
+  margin-right: 0;
 }
 
 .tab.active {
@@ -124,22 +203,13 @@
   background: #0056b3;
 }
 
-/* RTL Adjustments for Orders Table */
-.orders-table-container.rtl {
-  direction: rtl;
-}
-.orders-table-container.rtl th,
-.orders-table-container.rtl td {
-  text-align: right;
-}
-
 /* Courier Header for Delivery Group Sections */
 .courier-header {
-  background: #e9ecef; /* subtle grey background */
+  background: #e9ecef;
   font-size: 1rem;
   font-weight: bold;
   padding: 0.75rem 1rem;
-  border-bottom: 2px solid #007bff; /* a blue underline to indicate section start */
+  border-bottom: 2px solid #007bff;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -161,6 +231,26 @@
   background: #218838;
 }
 
+/* Action Buttons */
+.finish-order-button,
+.unassign-order-button,
+.return-to-route-button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-right: 0.5rem;
+}
+
+.finish-order-button:hover,
+.unassign-order-button:hover,
+.return-to-route-button:hover {
+  background: #0056b3;
+}
 
 /* Responsive Table */
 @media screen and (max-width: 768px) {

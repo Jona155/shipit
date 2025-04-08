@@ -1,14 +1,13 @@
 {
   "orders_title": "ניהול הזמנות",
   "accepted": "התקבלו",
-  "on_their way": "בדרך",
+  "on_their_way": "בדרך",
   "finished": "הסתיימו",
   "orders_new": "הזמנה חדשה",
   "orders_assign": "שייך הזמנות נבחרות",
   "orders_finish": "סיים",
   "orders_unassign": "בטל שיוך",
-  "orders_return": "החזר למסלול",
-  
+  "orders_return": "החזר להתקבל",
   "users_title": "ניהול משתמשים",
   "users_new": "משתמש חדש",
   "users_name": "שם",
@@ -18,17 +17,14 @@
   "users_actions": "פעולות",
   "users_edit": "ערוך",
   "users_delete": "מחק",
-  
   "analytics_title": "לוח בקרה אנליטי",
   "analytics_today_orders": "הזמנות היום",
   "analytics_weekly_chart": "ממוצע הזמנות לפי יום בשבוע",
-  
   "settings_business_name": "שם העסק",
   "settings_business_address": "כתובת העסק",
   "settings_business_phone": "טלפון העסק",
   "settings_save": "שמור הגדרות",
   "settings_saved": "ההגדרות נשמרו בהצלחה!",
-
   "orders_select": "סמן הזמנה",
   "orders_id": "מזהה הזמנה",
   "orders_customer": "שם הלקוח",
@@ -39,19 +35,16 @@
   "orders_action": "פעולות",
   "orders_finish_route": "סיים מסלול",
   "orders_unassigned": "בטל ציוות",
-
   "assign_courier": "שייך שליח",
   "select_courier": "בחר שליח",
   "assign": "שייך",
   "cancel": "בטל",
-
   "user_name_placeholder": "שם",
   "user_email_placeholder": "אימייל",
   "user_role_courier": "שליח",
   "user_role_dispatcher": "מפקח",
   "update_user": "עדכן משתמש",
   "add_user": "הוסף משתמש",
-
   "user_name": "שם",
   "user_email": "אימייל",
   "user_role": "תפקיד",
@@ -63,16 +56,13 @@
   "out_of_shift": "מחוץ למשמרת",
   "edit": "ערוך",
   "delete": "מחק",
-
   "users_management": "ניהול משתמשים",
   "new_user": "משתמש חדש",
-
   "app_title": "אפליקציית שליחים",
   "nav_orders": "הזמנות",
   "nav_users": "משתמשים",
   "nav_analytics": "ניתוח נתונים",
   "nav_settings": "הגדרות",
-
   "analytics_dashboard": "לוח בקרה אנליטי",
   "todays_orders": "הזמנות היום",
   "average_orders": "ממוצע הזמנות",
@@ -84,22 +74,18 @@
   "friday": "יום שישי",
   "saturday": "יום שבת",
   "sunday": "יום ראשון",
-
   "footer_language": "שפה",
   "language_english": "אנגלית",
   "language_hebrew": "עברית",
-
   "home_title": "לוח בקרה למשגר",
   "uk_flag_alt": "דגל בריטניה",
   "israel_flag_alt": "דגל ישראל",
-
   "select_orders_to_assign": "אנא בחר לפחות הזמנה אחת לשיוך.",
   "orders_assigned_success": "ההזמנות שויכו בהצלחה לשליח!",
   "order_marked_finished": "ההזמנה סומנה כהושלמה!",
   "route_orders_finished": "כל ההזמנות במסלול סומנו כהושלמו!",
   "order_unassigned": "ההזמנה בוטלה והוחזרה למצב 'התקבלה'!",
   "order_returned_to_way": "ההזמנה הוחזרה למצב 'בדרך'!",
-
   "new_order": "הזמנה חדשה",
   "order_customer": "שם הלקוח",
   "order_address": "כתובת למשלוח",
@@ -107,31 +93,60 @@
   "add_order": "הוסף הזמנה",
   "add_new_order": "הוסף הזמנה חדשה",
   "order_added_success": "הזמנה חדשה נוספה בהצלחה!",
-
   "search_orders": "חפש הזמנה...",
-
   "switch_to_map": "תצוגת מפה",
-  "switch_to_table": "טבלת הזמנות",
-
+  "switch_to_cards": "הצג כרטיסים",
   "build_route": "תכנן מסלול חדש",
-  "cancel_build_route": "בטל תכנון מסלול", 
-
+  "cancel_build_route": "בטל תכנון מסלול",
   "search_users": "חפש משתמש קיים...",
-
   "login": "התחברות",
   "email": "אימייל",
   "password": "סיסמה",
   "login_error": "אימייל או סיסמה לא תקינים",
   "logout": "התנתקות",
-
   "nav_back_to_businesses": "העסקים שלי",
   "business_list": "העסקים שלי",
-  "nav_businesses": "העסקים שלי",
-
+  "nav_my_businesses": "העסקים שלי",
   "business_dashboard": "Shipit",
   "user_username_placeholder": "שם משתמש",
-  "user_password_placeholder": "סיסמה"
-
-
-
+  "user_password_placeholder": "סיסמה",
+  "loading": "טוען...",
+  "error": "שגיאה",
+  "maps_load_error": "אירעה שגיאה בטעינת מפות Google",
+  "order_label": "תווית הזמנה",
+  "customer_name": "שם הלקוח",
+  "customer_phone": "טלפון הלקוח",
+  "apartment_number": "מספר דירה",
+  "floor_number": "קומה",
+  "order_amount": "סכום הזמנה",
+  "order_comments": "הערות להזמנה",
+  "delivery_comments": "הערות למשלוח",
+  "fetch_orders_error": "נכשלה בקשת קבלת ההזמנות מהשרת",
+  "fetch_delivery_groups_error": "נכשלה בקשת קבלת קבוצות משלוח מהשרת",
+  "update_order_status_error": "נכשלה בקשת עדכון סטטוס ההזמנה",
+  "location_required_error": "נדרשים מיקום ומזהה מקום עבור הזמנה חדשה",
+  "create_order_error": "נכשלה יצירת ההזמנה",
+  "order_finished": "ההזמנה הושלמה",
+  "order_returned_to_accepted": "ההזמנה הוחזרה ל'התקבלו'",
+  "order_returned_to_on_their_way": "ההזמנה הוחזרה למצב 'בדרך'",
+  "order_unassigned": "ההזמנה בוטלה מהשליח",
+  "delivery_group_finished_error": "נכשלה בקשת סיום קבוצת משלוח",
+  "delivery_group_finished": "קבוצת המשלוח הושלמה בהצלחה",
+  "orders_partner_restaurant": "נשלח ממסעדה",
+  "orders_partner_vendor": "נשלח לספק",
+  "assigned": "בטיפול",
+  "collected": "נאסף",
+  "delivered": "נמסר",
+  "orders_count": "{{count}} הזמנות",
+  "orders_in_route": "הזמנות במסלול",
+  "assigned_at": "הוקצה בשעה",
+  "missing_order_data": "הזמנה {{id}} (מידע לא זמין)",
+  "no_active_delivery_groups": "אין קבוצות משלוח פעילות",
+  "no_delivery_groups_found_for_search": "לא נמצאו קבוצות משלוח עבור: '{{search}}'",
+  "unknown_courier": "שליח לא ידוע",
+  "expand": "הרחב",
+  "collapse": "צמצם",
+  "unknown": "לא ידוע",
+  "orders": "הזמנות",
+  "orders_count_simple": "{{count}} הזמנות"
 }

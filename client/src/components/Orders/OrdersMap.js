@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useTranslation } from 'react-i18next';
+import './OrdersMap.css';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -29,7 +30,23 @@ const generateCourierColors = (couriers) => {
   return courierColors;
 };
 
-const OrdersMap = ({ orders, activeTab, isSelectingForRoute, selectedOrders, onSelectOrder }) => {
+const OrdersMap = ({
+  orders,
+  activeTab,
+  isSelectingForRoute,
+  selectedOrders,
+  onSelectOrder,
+  onFinishOrder,
+  onUnassignOrder,
+  onReturnToOnTheirWay,
+  onFinishRoute,
+  onFinishDeliveryGroup,
+  searchTerm,
+  setSearchTerm,
+  onAddOrder,
+  isMapView,
+  isRTL
+}) => {
   const { t } = useTranslation();
 
   const getOrderStatus = (order) => {
@@ -41,8 +58,6 @@ const OrdersMap = ({ orders, activeTab, isSelectingForRoute, selectedOrders, onS
   };
 
   const filteredOrders = orders.filter(order => getOrderStatus(order) === activeTab);
-
-  console.log('Filtered orders for map:', filteredOrders);
 
   // Generate colors for couriers
   const courierColors = useMemo(() => {
@@ -92,41 +107,43 @@ const OrdersMap = ({ orders, activeTab, isSelectingForRoute, selectedOrders, onS
   };
 
   return (
-    <MapContainer center={[31.7767, 35.2345]} zoom={7} style={{ height: '100%', width: '100%' }}>
-      <MapAdjuster />
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      {filteredOrders.map(order => (
-        order.location && order.location.lat && order.location.lng ? (
-          <Marker 
-            key={order._id} 
-            position={[order.location.lat, order.location.lng]}
-            icon={getIcon(order)}
-            eventHandlers={{
-              click: () => handleMarkerClick(order._id),
-            }}
-            opacity={isSelectingForRoute && !selectedOrders.includes(order._id) ? 0.5 : 1}
-          >
-            <Popup>
-              <div>
-                <h3>{order.customer_name}</h3>
-                <p>{order.address}</p>
-                <p>{t('order_items')}: {order.comments_for_order}</p>
-                <p>{t('order_status')}: {t(`order_status_${getOrderStatus(order)}`)}</p>
-                {order.courier && <p>{t('order_courier')}: {order.courier}</p>}
-                {isSelectingForRoute && (
-                  <button onClick={() => onSelectOrder(order._id)}>
-                    {selectedOrders.includes(order._id) ? t('deselect') : t('select')}
-                  </button>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ) : null
-      ))}
-    </MapContainer>
+    <div className={`orders-map ${isRTL ? 'rtl' : 'ltr'}`}>
+      <MapContainer center={[31.7767, 35.2345]} zoom={7} style={{ height: '100%', width: '100%' }}>
+        <MapAdjuster />
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {filteredOrders.map(order => (
+          order.location && order.location.lat && order.location.lng ? (
+            <Marker 
+              key={order._id} 
+              position={[order.location.lat, order.location.lng]}
+              icon={getIcon(order)}
+              eventHandlers={{
+                click: () => handleMarkerClick(order._id),
+              }}
+              opacity={isSelectingForRoute && !selectedOrders.includes(order._id) ? 0.5 : 1}
+            >
+              <Popup>
+                <div>
+                  <h3>{order.customer_name}</h3>
+                  <p>{order.address}</p>
+                  <p>{t('order_items')}: {order.comments_for_order}</p>
+                  <p>{t('order_status')}: {t(`order_status_${getOrderStatus(order)}`)}</p>
+                  {order.courier && <p>{t('order_courier')}: {order.courier}</p>}
+                  {isSelectingForRoute && (
+                    <button onClick={() => onSelectOrder(order._id)}>
+                      {selectedOrders.includes(order._id) ? t('deselect') : t('select')}
+                    </button>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ) : null
+        ))}
+      </MapContainer>
+    </div>
   );
 };
 

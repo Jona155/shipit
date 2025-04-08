@@ -11,7 +11,8 @@ const OrderRow = ({
   onFinishOrder, 
   onUnassignOrder, 
   onReturnToOnTheirWay,
-  isVendorPage
+  isVendorPage,
+  isRTL
 }) => {
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
@@ -25,7 +26,7 @@ const OrderRow = ({
   return (
     <tr>
       {activeTab === 'accepted' && (
-        <td>
+        <td className={isRTL ? 'rtl' : 'ltr'}>
           <input
             type="checkbox"
             checked={isSelected}
@@ -33,30 +34,30 @@ const OrderRow = ({
           />
         </td>
       )}
-      <td>{order.short_id || order._id}</td>
-      <td>{order.customer_name}</td>
-      <td>{order.address}</td>
-      <td>{order.comments_for_order}</td>
-      <td>{t(`order_status_${orderStatus}`)}</td>
-      <td className="partner-cell">{partnerName}</td>
+      <td className={isRTL ? 'rtl' : 'ltr'}>{order.short_id || order._id}</td>
+      <td className={isRTL ? 'rtl' : 'ltr'}>{order.customer_name}</td>
+      <td className={isRTL ? 'rtl' : 'ltr'}>{order.address}</td>
+      <td className={isRTL ? 'rtl' : 'ltr'}>{order.comments_for_order}</td>
+      <td className={isRTL ? 'rtl' : 'ltr'}>{t(orderStatus)}</td>
+      <td className={`partner-cell ${isRTL ? 'rtl' : 'ltr'}`}>{partnerName}</td>
       {(activeTab === 'on_their_way' || activeTab === 'finished') && (
-        <td>
+        <td className={isRTL ? 'rtl' : 'ltr'}>
           {order.third_party && order.sent_from
             ? t('orders_received_from', { restaurant: order.sent_from })
             : (order.courier_name || order.courier_id || t('orders_unassigned'))}
         </td>
       )}
-      <td>
+      <td className={isRTL ? 'rtl' : 'ltr'}>
         {activeTab === 'on_their_way' && (
           <>
             <button
-              className="finish-order-button"
+              className={`finish-order-button ${isRTL ? 'rtl' : 'ltr'}`}
               onClick={() => onFinishOrder(order._id)}
             >
               {t('orders_finish')}
             </button>
             <button
-              className="unassign-order-button"
+              className={`unassign-order-button ${isRTL ? 'rtl' : 'ltr'}`}
               onClick={() => onUnassignOrder(order._id)}
             >
               {t('orders_unassign')}
@@ -65,7 +66,7 @@ const OrderRow = ({
         )}
         {activeTab === 'finished' && (
           <button
-            className="return-to-route-button"
+            className={`return-to-route-button ${isRTL ? 'rtl' : 'ltr'}`}
             onClick={() => onReturnToOnTheirWay(order._id)}
           >
             {t('orders_return')}
