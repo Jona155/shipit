@@ -33,14 +33,37 @@ def update_user(user_id):
         db = get_db()
         users_dal = UsersDAL(db)
         data = request.json
+        
+        # Check if user exists before attempting update
+        user = users_dal.get_user(user_id)
+        if not user:
+            return jsonify({"error": "User not found", "userId": user_id}), 404
+            
+        # Validate required fields based on update type
+        if data.get('type') == 'messenger' and 'isCurrentlyOnShift' in data:
+            # For shift status updates, validate profilesUpdate if provided
+            if 'profilesUpdate' in data and 'messenger' not in data['profilesUpdate']:
+                return jsonify({"error": "Missing messenger profile in profilesUpdate"}), 400
+        
+        # Perform the update
         success = users_dal.update_user(user_id, data)
+        
         if success:
-            return jsonify({"message": "User updated successfully"}), 200
+            # Return the updated user data
+            updated_user = users_dal.get_user(user_id)
+            return jsonify({
+                "message": "User updated successfully",
+                "user": json.loads(json.dumps(updated_user, cls=JSONEncoder))
+            }), 200
         else:
-            return jsonify({"error": "User not found or no changes made"}), 404
+            return jsonify({"error": "No changes were made", "userId": user_id}), 304
     except Exception as e:
         logging.error(f"Error updating user: {str(e)}")
-        return jsonify({"error": f"An error occurred while updating the user: {str(e)}"}), 500
+        return jsonify({
+            "error": f"An error occurred while updating the user",
+            "details": str(e),
+            "userId": user_id
+        }), 500
 
 @bp.route('/delete/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
