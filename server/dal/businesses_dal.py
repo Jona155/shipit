@@ -2,7 +2,7 @@ class BusinessesDAL:
     def __init__(self, db):
         self.db = db
 
-    def get_businesses_for_user(self, user_id):
+    def get_businesses_for_user(self, user_id, fields=None):
         user_businesses = self.db.user_businesses.find({
             "uid": user_id,
             "isDeleted": {"$ne": True}
@@ -19,18 +19,25 @@ class BusinessesDAL:
             if 'businessManager' in profiles:
                 business_ids.add(ub['bid'])
 
+        projection = None
+        if fields:
+            projection = {field: 1 for field in fields}
+
         if is_application_manager:
             # If user is an ApplicationManager, return all businesses
-            businesses = self.db.businesses.find()
+            businesses = self.db.businesses.find({}, projection)
         else:
             # Otherwise, return only the businesses they manage
-            businesses = self.db.businesses.find({"_id": {"$in": list(business_ids)}})
+            businesses = self.db.businesses.find({"_id": {"$in": list(business_ids)}}, projection)
 
         return list(businesses)
 
-    # New method added to return all businesses without filtering by user
-    def get_businesses(self):
-        return list(self.db.businesses.find())
+    # Updated method to accept fields parameter
+    def get_businesses(self, fields=None):
+        projection = None
+        if fields:
+            projection = {field: 1 for field in fields}
+        return list(self.db.businesses.find({}, projection))
 
     def get_business(self, business_id):
         return self.db.businesses.find_one({"_id": business_id})
