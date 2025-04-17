@@ -196,5 +196,9 @@
   "user_shift_toggle_aria": "שנה סטטוס משמרת",
   "username_aria": "הזן שם משתמש להתחברות",
   "password_aria": "הזן סיסמה להתחברות",
-  "submit_form_aria": "שלח את הטופס"
+  "submit_form_aria": "שלח את הטופס",
+  "orders_abort_assignment": "בטל שיוך",
+  "confirm_abort_delivery_group": "האם אתה בטוח שברצונך לבטל שיוך מסלול זה? פעולה זו תחזיר את כל ההזמנות למצב 'התקבל'.",
+  "error_aborting_delivery_group": "שגיאה בביטול שיוך המסלול. אנא נסה שנית.",
+  "delivery_group_aborted": "שיוך קבוצת המשלוח בוטל בהצלחה"
 }

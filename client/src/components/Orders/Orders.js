@@ -284,6 +284,31 @@ const Orders = () => {
     }
   };
 
+  const handleAbortDeliveryGroup = async deliveryGroupId => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/delivery-group/abort`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ delivery_group_id: deliveryGroupId })
+        }
+      );
+      if (!response.ok) throw new Error('Failed to abort delivery group');
+      await response.json();
+      showAlertMessage(t('delivery_group_aborted', 'Delivery group assignment cancelled'));
+      
+      // Remove the aborted delivery group from the state
+      setDeliveryGroups(prev => prev.filter(group => group._id !== deliveryGroupId));
+      
+      // Refresh orders to show the updated statuses
+      fetchOrders();
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
+  };
+
   // Updated: Now actually posts the new order to /api/orders
   const handleAddOrder = async newOrder => {
     // Validate location & place_id
@@ -364,6 +389,7 @@ const Orders = () => {
             onReturnToOnTheirWay={handleReturnToOnTheirWay}
             onFinishRoute={handleFinishDeliveryGroup}
             onFinishDeliveryGroup={handleFinishDeliveryGroup}
+            onAbortDeliveryGroup={handleAbortDeliveryGroup}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             onAddOrder={() => setShowOrderForm(true)}
@@ -390,6 +416,7 @@ const Orders = () => {
             onReturnToOnTheirWay={handleReturnToOnTheirWay}
             onFinishRoute={handleFinishDeliveryGroup}
             onFinishDeliveryGroup={handleFinishDeliveryGroup}
+            onAbortDeliveryGroup={handleAbortDeliveryGroup}
             isMapView={true}
             isRTL={isRTL}
           />

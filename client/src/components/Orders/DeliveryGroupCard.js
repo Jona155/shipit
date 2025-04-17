@@ -5,6 +5,7 @@ import './DeliveryGroupCard.css';
 const DeliveryGroupCard = ({
   deliveryGroup,
   onFinishDeliveryGroup,
+  onAbortDeliveryGroup,
   isRTL,
   orders
 }) => {
@@ -34,6 +35,13 @@ const DeliveryGroupCard = ({
           <div className="order-count-badge">
             {t('orders_count_simple', { count: deliveryGroup.route.length })}
           </div>
+          <button 
+            className="abort-group-button" 
+            onClick={() => onAbortDeliveryGroup(deliveryGroup._id)}
+            title={t('orders_abort_assignment')}
+          >
+            {t('orders_abort_assignment')}
+          </button>
           <button 
             className="finish-group-button" 
             onClick={() => onFinishDeliveryGroup(deliveryGroup._id)}

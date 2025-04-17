@@ -7,6 +7,7 @@ const DeliveryGroupsView = ({
   businessId,
   orders,
   onFinishDeliveryGroup,
+  onAbortDeliveryGroup,
   searchTerm,
   isRTL
 }) => {
@@ -79,6 +80,7 @@ const DeliveryGroupsView = ({
               key={group._id}
               deliveryGroup={group}
               onFinishDeliveryGroup={onFinishDeliveryGroup}
+              onAbortDeliveryGroup={onAbortDeliveryGroup}
               isRTL={isRTL}
               orders={orders}
             />

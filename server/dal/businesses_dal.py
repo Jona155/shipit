@@ -24,23 +24,26 @@ class BusinessesDAL:
             projection = {field: 1 for field in fields}
 
         if is_application_manager:
-            # If user is an ApplicationManager, return all businesses
-            businesses = self.db.businesses.find({}, projection)
+            # If user is an ApplicationManager, return all businesses that aren't deleted
+            businesses = self.db.businesses.find({"isDeleted": {"$ne": True}}, projection)
         else:
-            # Otherwise, return only the businesses they manage
-            businesses = self.db.businesses.find({"_id": {"$in": list(business_ids)}}, projection)
+            # Otherwise, return only the businesses they manage that aren't deleted
+            businesses = self.db.businesses.find({
+                "_id": {"$in": list(business_ids)},
+                "isDeleted": {"$ne": True}
+            }, projection)
 
         return list(businesses)
 
-    # Updated method to accept fields parameter
+    # Updated method to accept fields parameter and filter out deleted businesses
     def get_businesses(self, fields=None):
         projection = None
         if fields:
             projection = {field: 1 for field in fields}
-        return list(self.db.businesses.find({}, projection))
+        return list(self.db.businesses.find({"isDeleted": {"$ne": True}}, projection))
 
     def get_business(self, business_id):
-        return self.db.businesses.find_one({"_id": business_id})
+        return self.db.businesses.find_one({"_id": business_id, "isDeleted": {"$ne": True}})
 
     def user_has_access_to_business(self, user_id, business_id):
         user_business = self.db.user_businesses.find_one({

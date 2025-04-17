@@ -42,6 +42,10 @@
   "orders_action": "Action",
   "orders_finish_route": "Finish Route",
   "orders_unassigned": "Unassigned",
+  "orders_abort_assignment": "Cancel Assignment",
+  "confirm_abort_delivery_group": "Are you sure you want to cancel this delivery group assignment? This will return all orders to ACCEPTED status.",
+  "error_aborting_delivery_group": "Error canceling delivery group assignment. Please try again.",
+  "delivery_group_aborted": "Delivery group assignment cancelled successfully",
 
   "assign_courier": "Assign Courier",
   "select_courier": "Select a courier",

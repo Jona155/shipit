@@ -16,6 +16,7 @@ const OrdersCards = ({
   onReturnToOnTheirWay,
   onFinishRoute,
   onFinishDeliveryGroup,
+  onAbortDeliveryGroup,
   searchTerm,
   setSearchTerm,
   onAddOrder,
@@ -97,6 +98,7 @@ const OrdersCards = ({
           businessId={businessId}
           orders={orders}
           onFinishDeliveryGroup={onFinishDeliveryGroup}
+          onAbortDeliveryGroup={onAbortDeliveryGroup}
           searchTerm={searchTerm}
           isRTL={isRTL}
         />

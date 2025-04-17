@@ -164,3 +164,61 @@ def finish_delivery_group():
         return jsonify({"message": "Delivery group finished", "delivery_group_id": dg_id}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@bp.route('/abort', methods=['POST'])
+def abort_delivery_group():
+    """
+    Aborts a delivery group assignment:
+    - Updates the delivery group status to "ABORTED"
+    - Updates all orders in its route to status "ACCEPTED"
+    - Resets courier's availability status
+
+    Expects JSON:
+    {
+       "delivery_group_id": "<delivery_group_id>"
+    }
+    """
+    try:
+        db = get_db()
+        data = request.json
+        dg_id = data.get("delivery_group_id")
+        if not dg_id:
+            return jsonify({"error": "Missing delivery_group_id"}), 400
+
+        # Retrieve the delivery group document to get order IDs and courier ID
+        dg = db.delivery_groups.find_one({"_id": dg_id})
+        if not dg:
+            return jsonify({"error": "Delivery group not found"}), 404
+
+        # Update the delivery group status to ABORTED
+        result = db.delivery_groups.update_one({"_id": dg_id}, {"$set": {"status": "ABORTED"}})
+        if result.modified_count == 0:
+            return jsonify({"error": "Delivery group not found or already aborted"}), 404
+
+        order_ids = [item["orderId"] for item in dg.get("route", [])]
+        courier_uid = dg.get("messengerId")
+
+        # Update orders to ACCEPTED status
+        db.orders.update_many(
+            {"_id": {"$in": order_ids}},
+            {
+                "$push": {"status": {"$each": [{"value": "ACCEPTED", "timestamp": datetime.utcnow()}], "$position": 0}},
+                "$set": {"latest_status": "ACCEPTED", "courier_id": None, "courier_name": None}
+            }
+        )
+
+        # Reset courier's status - set isWhileMission to false and isCurrentlyAvailable to true
+        if courier_uid:
+            db.user_businesses.update_one(
+                {"uid": courier_uid},
+                {"$set": {
+                    "profiles.messenger.isWhileMission": False,
+                    "profiles.messenger.isCurrentlyAvailable": True,
+                    "profiles.messenger.lastAvailableTimestamp": datetime.utcnow()
+                }}
+            )
+
+        return jsonify({"message": "Delivery group aborted", "delivery_group_id": dg_id}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
