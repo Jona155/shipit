@@ -3,7 +3,19 @@ export const getOrderStatus = (order) => {
     return 'unknown';
   }
   
-  // First try to use the latest_status field if it exists
+  // First check the status array (now the primary source of truth)
+  if (order.status && order.status.length > 0) {
+    const latestStatus = order.status[0]?.value?.toUpperCase();
+    
+    if (latestStatus) {
+      if (['READY', 'ACCEPTED'].includes(latestStatus)) return 'accepted';
+      if (['ASSIGNED', 'COLLECTED'].includes(latestStatus)) return 'on_their_way';
+      if (latestStatus === 'DELIVERED') return 'finished';
+      return 'unknown';
+    }
+  }
+  
+  // Fall back to latest_status field if status array is empty or invalid (for backward compatibility)
   if (order.latest_status) {
     const status = order.latest_status.toUpperCase();
     if (['READY', 'ACCEPTED'].includes(status)) return 'accepted';
@@ -12,20 +24,5 @@ export const getOrderStatus = (order) => {
     return 'unknown';
   }
   
-  // Fall back to checking the status array
-  if (!order.status || !order.status.length) {
-    return 'unknown';
-  }
-
-  // Get the most recent status from the status array
-  const latestStatus = order.status[0]?.value?.toUpperCase();
-
-  if (!latestStatus) {
-    return 'unknown';
-  }
-
-  if (['READY', 'ACCEPTED'].includes(latestStatus)) return 'accepted';
-  if (['ASSIGNED', 'COLLECTED'].includes(latestStatus)) return 'on_their_way';
-  if (latestStatus === 'DELIVERED') return 'finished';
   return 'unknown';
 };

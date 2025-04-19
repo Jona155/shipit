@@ -419,6 +419,8 @@ const Orders = () => {
             onAbortDeliveryGroup={handleAbortDeliveryGroup}
             isMapView={true}
             isRTL={isRTL}
+            onBuildRoute={handleBuildRoute}
+            onCancelBuildRoute={handleCancelBuildRoute}
           />
           
           {/* Assign Courier Button for map view - only shown on the accepted tab */}

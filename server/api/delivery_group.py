@@ -145,8 +145,7 @@ def finish_delivery_group():
         db.orders.update_many(
             {"_id": {"$in": order_ids}},
             {
-                "$push": {"status": {"$each": [{"value": "DELIVERED", "timestamp": datetime.utcnow()}], "$position": 0}},
-                "$set": {"latest_status": "DELIVERED"}
+                "$push": {"status": {"$each": [{"value": "DELIVERED", "timestamp": datetime.utcnow()}], "$position": 0}}
             }
         )
 
@@ -199,12 +198,12 @@ def abort_delivery_group():
         order_ids = [item["orderId"] for item in dg.get("route", [])]
         courier_uid = dg.get("messengerId")
 
-        # Update orders to ACCEPTED status
+        # Update orders to ACCEPTED status and remove courier info
         db.orders.update_many(
             {"_id": {"$in": order_ids}},
             {
                 "$push": {"status": {"$each": [{"value": "ACCEPTED", "timestamp": datetime.utcnow()}], "$position": 0}},
-                "$set": {"latest_status": "ACCEPTED", "courier_id": None, "courier_name": None}
+                "$set": {"courier_id": None, "courier_name": None}
             }
         )
 

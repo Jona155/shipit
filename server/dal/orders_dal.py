@@ -29,14 +29,14 @@ class OrdersDAL:
             except ValueError:
                 pass
 
-        # Filter by status using the latest_status field directly
+        # Filter by status using the first element in the status array
         if status == 'accepted':
-            match_criteria["latest_status"] = {"$in": ["READY", "ACCEPTED"]}
+            match_criteria["status.0.value"] = {"$in": ["READY", "ACCEPTED"]}
         elif status == 'on_their_way':
-            match_criteria["latest_status"] = {"$in": ["ASSIGNED", "COLLECTED"]}
+            match_criteria["status.0.value"] = {"$in": ["ASSIGNED", "COLLECTED"]}
         elif status == 'finished':
             cutoff = datetime.utcnow() - timedelta(hours=24)
-            match_criteria["latest_status"] = "DELIVERED"
+            match_criteria["status.0.value"] = "DELIVERED"
             match_criteria["status.0.timestamp"] = {"$gte": cutoff}
 
         # Perform the query
@@ -59,9 +59,7 @@ class OrdersDAL:
     def update_orders_status(self, order_ids, new_status, courier_id, courier_name, third_party):
         logging.info(f"Updating order status: status={new_status}, courier={courier_id} ({courier_name})")
         
-        update_fields = {
-            "latest_status": new_status,
-        }
+        update_fields = {}
         
         # Only set courier info if they're provided
         if courier_id:
@@ -119,9 +117,6 @@ class OrdersDAL:
                 "value": "ACCEPTED",
                 "timestamp": datetime.utcnow()
             }]
-            
-        # Set the latest_status field
-        order_data["latest_status"] = order_data["status"][0]["value"]
             
         # Convert top-level timestamps if they're strings
         if "timestamp" in order_data and isinstance(order_data["timestamp"], str):

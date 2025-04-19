@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useTranslation } from 'react-i18next';
 import './OrdersMap.css';
+import { getOrderStatus } from "./orderUtils";
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -41,27 +42,22 @@ const OrdersMap = ({
   onReturnToOnTheirWay,
   onFinishRoute,
   onFinishDeliveryGroup,
+  onAbortDeliveryGroup,
   searchTerm,
   setSearchTerm,
   onAddOrder,
   isMapView,
-  isRTL
+  isRTL,
+  onBuildRoute,
+  onCancelBuildRoute
 }) => {
   const { t } = useTranslation();
-
-  const getOrderStatus = (order) => {
-    const latestStatus = order.latest_status?.toUpperCase();
-    if (['READY', 'ACCEPTED'].includes(latestStatus)) return 'accepted';
-    if (['ASSIGNED', 'COLLECTED'].includes(latestStatus)) return 'on_their_way';
-    if (latestStatus === 'DELIVERED') return 'finished';
-    return 'unknown';
-  };
 
   const filteredOrders = orders.filter(order => getOrderStatus(order) === activeTab);
 
   // Generate colors for couriers
   const courierColors = useMemo(() => {
-    const couriers = [...new Set(filteredOrders.map(order => order.courier).filter(Boolean))];
+    const couriers = [...new Set(filteredOrders.map(order => order.courier_name || order.courier_id).filter(Boolean))];
     return generateCourierColors(couriers);
   }, [filteredOrders]);
 
@@ -96,8 +92,10 @@ const OrdersMap = ({
   // Get appropriate icon based on order status and courier
   const getIcon = (order) => {
     const status = getOrderStatus(order);
-    if (status === 'on_their_way' && order.courier) {
-      return createCustomIcon(courierColors[order.courier]);
+    const courierIdentifier = order.courier_name || order.courier_id;
+    
+    if (status === 'on_their_way' && courierIdentifier) {
+      return createCustomIcon(courierColors[courierIdentifier]);
     } else if (status === 'finished') {
       return createCustomIcon('#808080'); // Gray for finished orders
     } else if (status === 'accepted') {
@@ -108,6 +106,17 @@ const OrdersMap = ({
 
   return (
     <div className={`orders-map ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className="map-controls">
+        {activeTab === 'accepted' && onBuildRoute && (
+          <button
+            className={`build-route-button ${isSelectingForRoute ? 'cancel' : ''} ${isRTL ? 'rtl' : 'ltr'}`}
+            onClick={isSelectingForRoute ? onCancelBuildRoute : onBuildRoute}
+          >
+            {isSelectingForRoute ? t('cancel_build_route') : t('build_route')}
+          </button>
+        )}
+      </div>
+      
       <MapContainer center={[31.7767, 35.2345]} zoom={7} style={{ height: '100%', width: '100%' }}>
         <MapAdjuster />
         <TileLayer
@@ -131,7 +140,7 @@ const OrdersMap = ({
                   <p>{order.address}</p>
                   <p>{t('order_items')}: {order.comments_for_order}</p>
                   <p>{t('order_status')}: {t(`order_status_${getOrderStatus(order)}`)}</p>
-                  {order.courier && <p>{t('order_courier')}: {order.courier}</p>}
+                  {order.courier_name && <p>{t('order_courier')}: {order.courier_name}</p>}
                   {isSelectingForRoute && (
                     <button onClick={() => onSelectOrder(order._id)}>
                       {selectedOrders.includes(order._id) ? t('deselect') : t('select')}
