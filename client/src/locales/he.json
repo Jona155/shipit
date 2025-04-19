@@ -200,5 +200,8 @@
   "orders_abort_assignment": "בטל שיוך",
   "confirm_abort_delivery_group": "האם אתה בטוח שברצונך לבטל שיוך מסלול זה? פעולה זו תחזיר את כל ההזמנות למצב 'התקבל'.",
   "error_aborting_delivery_group": "שגיאה בביטול שיוך המסלול. אנא נסה שנית.",
-  "delivery_group_aborted": "שיוך קבוצת המשלוח בוטל בהצלחה"
+  "delivery_group_aborted": "שיוך קבוצת המשלוח בוטל בהצלחה",
+
+  "analytics_coming_soon_title": "בקרוב!",
+  "analytics_coming_soon_message": "אנחנו עובדים קשה כדי להביא לכם יכולות אנליטיקס מתקדמות. חזרו לכאן בקרוב!"
 }

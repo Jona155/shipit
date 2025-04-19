@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const validateToken = async () => {
@@ -20,7 +21,6 @@ export const AuthProvider = ({ children }) => {
           if (response.ok) {
             setIsLoggedIn(true);
           } else {
-            // If token is invalid, remove it and set isLoggedIn to false
             localStorage.removeItem('authToken');
             setIsLoggedIn(false);
           }
@@ -28,7 +28,11 @@ export const AuthProvider = ({ children }) => {
           console.error('Token validation error:', error);
           localStorage.removeItem('authToken');
           setIsLoggedIn(false);
+        } finally {
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
 
@@ -46,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

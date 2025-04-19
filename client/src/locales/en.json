@@ -204,5 +204,8 @@
   "user_shift_toggle_aria": "Toggle user shift status",
   "username_aria": "Enter username for login",
   "password_aria": "Enter password for login",
-  "submit_form_aria": "Submit the form"
+  "submit_form_aria": "Submit the form",
+
+  "analytics_coming_soon_title": "Coming Soon!",
+  "analytics_coming_soon_message": "We are working hard to bring you amazing analytics features. Check back later!"
 }

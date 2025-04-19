@@ -46,3 +46,60 @@
   direction: ltr;
   text-align: left;
 }
+
+.analytics-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 180px); /* Adjust based on header/footer height */
+  padding: 40px;
+  text-align: center;
+  background-color: #f8f9fa; /* Light background */
+  border-radius: 8px;
+  margin: 20px; /* Add some margin around the placeholder */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.placeholder-icon {
+  color: #007bff; /* Primary blue color, adjust as needed */
+  margin-bottom: 24px;
+  animation: float 3s ease-in-out infinite; /* Add a subtle floating animation */
+}
+
+.placeholder-title {
+  font-size: 2.8rem; /* Large title */
+  font-weight: bold;
+  color: #343a40; /* Darker text color */
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.placeholder-subtitle {
+  font-size: 1.1rem;
+  color: #6c757d; /* Muted text color */
+  max-width: 450px; /* Limit width for readability */
+  line-height: 1.6;
+}
+
+/* RTL specific adjustments if needed */
+.analytics-placeholder.rtl {
+  direction: rtl;
+}
+
+.analytics-placeholder.ltr {
+  direction: ltr;
+}
+
+/* Floating animation for the icon */
+@keyframes float {
+	0% {
+		transform: translatey(0px);
+	}
+	50% {
+		transform: translatey(-10px);
+	}
+	100% {
+		transform: translatey(0px);
+	}
+}

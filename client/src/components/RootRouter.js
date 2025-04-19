@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, Outlet } from 'react-router-dom';
+import { HashRouter as Router, Route, Routes, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import Login from './Login/Login';
 import ProtectedRoute from './ProtectedRoute';
@@ -7,6 +7,7 @@ import BusinessList from './BusinessList/BusinessList';
 import BusinessRouter from './BusinessRouter';
 import Footer from './Footer';
 import Header from './Header';
+import Loader from './Loader';
 
 const Layout = () => (
   <div className="app-layout">
@@ -19,7 +20,11 @@ const Layout = () => (
 );
 
 const RootRouterContent = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <Routes>
@@ -29,7 +34,14 @@ const RootRouterContent = () => {
         <Route path="businesses" element={<BusinessList />} />
         <Route path=":businessId/*" element={<BusinessRouter />} />
       </Route>
-      <Route path="*" element={<Navigate to={isLoggedIn ? "/shipit/businesses" : "/login"} replace />} />
+      <Route path="/" element={<Navigate to={isLoggedIn ? "/shipit/businesses" : "/login"} replace />} />
+      <Route path="*" element={
+        <div>
+          <h1>404 - Page Not Found</h1>
+          <p>The page you're looking for doesn't exist.</p>
+          <a href={isLoggedIn ? "/shipit/businesses" : "/login"}>Go back to home</a>
+        </div>
+      } />
     </Routes>
   );
 };
