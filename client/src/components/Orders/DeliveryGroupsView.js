@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import DeliveryGroupCard from './DeliveryGroupCard';
 import './DeliveryGroupsView.css';
+import Loading from '../common/Loading';
+import '../common/styles.css';
 
 const DeliveryGroupsView = ({
   businessId,
@@ -62,7 +64,7 @@ const DeliveryGroupsView = ({
     return group.route.some(item => item.orderId.toLowerCase().includes(searchLower));
   });
 
-  if (loading) return <div className="loading-message">{t('loading')}</div>;
+  if (loading) return <Loading size="medium" />;
   if (error) return <div className="error-message">{t('error')}: {error}</div>;
 
   return (

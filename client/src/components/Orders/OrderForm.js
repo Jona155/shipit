@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 import './OrderForm.css';
 import debounce from 'lodash/debounce';
+import Loading from '../common/Loading';
+import '../common/styles.css';
 
 const libraries = ['places'];
 
@@ -98,8 +100,8 @@ const OrderForm = ({ onSubmit, onClose }) => {
     onSubmit(newOrder);
   };
 
-  if (!isLoaded) return <div>{t('loading')}</div>;
-  if (loadingError) return <div>{t('maps_load_error')}</div>;
+  if (!isLoaded) return <Loading size="medium" />;
+  if (loadingError) return <div className="error-message">{t('maps_load_error')}</div>;
 
   return (
       <div className="order-form-container">

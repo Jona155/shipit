@@ -1,16 +1,8 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import './Loader.css';
+import Loading from './common/Loading';
 
-const Loader = () => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="loader-container">
-      <div className="loader"></div>
-      <p className="loader-text">{t('loading')}</p>
-    </div>
-  );
+const Loader = ({ size = 'fullscreen' }) => {
+  return <Loading size={size} />;
 };
 
 export default Loader;

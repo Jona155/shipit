@@ -1,0 +1,40 @@
+/* Common styles for error messages */
+.error-message {
+  background-color: #FFF3E0;
+  color: #E65100;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin: 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #FF9800;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.error-message::before {
+  content: '!';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #FFF3E0;
+  color: #FF9800;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  border: 2px solid #FF9800;
+}
+
+/* RTL support */
+.rtl .error-message {
+  border-left: none;
+  border-right: 4px solid #FF9800;
+  direction: rtl;
+} 

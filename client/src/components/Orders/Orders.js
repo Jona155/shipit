@@ -6,9 +6,11 @@ import OrdersMap from './OrdersMap';
 import Alert from './Alert';
 import OrderForm from './OrderForm';
 import CourierAssignment from './CourierAssignment';
+import Loading from '../common/Loading';
 import { useTranslation } from 'react-i18next';
 import { getOrderStatus } from "./orderUtils";
 import axios from 'axios';
+import '../common/styles.css';
 
 const Orders = () => {
   const { businessId } = useParams();
@@ -367,8 +369,8 @@ const Orders = () => {
 
   // During the initial load, show a full-page loader.
   // Once the orders are loaded, incremental updates happen seamlessly.
-  if (initialLoad && loading) return <div>{t('loading')}</div>;
-  if (error) return <div>{t('error')}: {error}</div>;
+  if (initialLoad && loading) return <Loading size="fullscreen" />;
+  if (error) return <div className="error-message">{t('error')}: {error}</div>;
 
   return (
     <div className={`orders-container ${isRTL ? 'rtl' : 'ltr'}`}>

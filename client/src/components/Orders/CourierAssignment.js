@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import './CourierAssignment.css';
+import Loading from '../common/Loading';
+import '../common/styles.css';
 
 const CourierAssignment = ({
   isOpen,
@@ -196,7 +198,7 @@ const CourierAssignment = ({
 
           {courierType === 'inhouse' ? (
             isLoading ? (
-              <p className="loading-text">{t('loading')}</p>
+              <Loading size="small" />
             ) : error ? (
               <p className="error-text">{t('error')}: {error}</p>
             ) : availableCouriers.length === 0 ? (
