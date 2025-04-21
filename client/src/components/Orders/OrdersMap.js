@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { useTranslation } from 'react-i18next';
 import './OrdersMap.css';
 import { getOrderStatus } from "./orderUtils";
+import SLATimer from './SLATimer';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -49,7 +50,8 @@ const OrdersMap = ({
   isMapView,
   isRTL,
   onBuildRoute,
-  onCancelBuildRoute
+  onCancelBuildRoute,
+  businessSLA
 }) => {
   const { t } = useTranslation();
 
@@ -141,6 +143,27 @@ const OrdersMap = ({
                   <p>{t('order_items')}: {order.comments_for_order}</p>
                   <p>{t('order_status')}: {t(`order_status_${getOrderStatus(order)}`)}</p>
                   {order.courier_name && <p>{t('order_courier')}: {order.courier_name}</p>}
+                  
+                  {businessSLA && order.status && order.status.length > 0 && (
+                    <div className="popup-sla-timer">
+                      <p>{t('order_sla') || 'SLA'}:</p>
+                      <div className="timer-container">
+                        <SLATimer 
+                          orderTime={(() => {
+                            // Create a date object from the timestamp
+                            const utcDate = new Date(order.status[order.status.length - 1].timestamp);
+                            
+                            // Add 3 hours to adjust for Israel timezone (UTC+3)
+                            const israelDate = new Date(utcDate.getTime() + (3 * 60 * 60 * 1000));
+                            
+                            return israelDate.toISOString();
+                          })()} 
+                          slaMinutes={businessSLA} 
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
                   {isSelectingForRoute && (
                     <button onClick={() => onSelectOrder(order._id)}>
                       {selectedOrders.includes(order._id) ? t('deselect') : t('select')}

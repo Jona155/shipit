@@ -34,6 +34,7 @@ const Orders = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('success');
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [businessSettings, setBusinessSettings] = useState(null);
 
   // Ref to hold the latest orders for incremental polling
   const ordersRef = useRef(orders);
@@ -55,15 +56,10 @@ const Orders = () => {
         url += `&since=${encodeURIComponent(lastTimestamp)}`;
       }
       
-      console.log(`Fetching orders for tab: ${activeTab}, URL: ${url}`);
-      
       try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch orders');
         const data = await response.json();
-        
-        console.log(`Received ${data.length} orders for tab ${activeTab}`);
-        console.log('Order statuses:', data.map(o => ({ id: o._id, latest_status: o.latest_status })));
         
         if (incremental) {
           // Merge new orders into the existing state (update if needed)
@@ -367,6 +363,32 @@ const Orders = () => {
     setSelectedOrders([]);
   };
 
+  // New function to fetch business settings
+  const fetchBusinessSettings = useCallback(async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/businesses/${businessId}`);
+      if (!response.ok) throw new Error('Failed to fetch business settings');
+      const businessData = await response.json();
+      
+      // Extract SLA from business settings with a default value
+      const settings = {
+        sla: businessData.sla || 30 // Default to 30 minutes if not set
+      };
+      
+      setBusinessSettings(settings);
+    } catch (err) {
+      console.error('Error fetching business settings:', err);
+      // Set default values if fetch fails
+      setBusinessSettings({ sla: 30 });
+    }
+  }, [businessId]);
+
+  // Add fetchBusinessSettings to initial load
+  useEffect(() => {
+    fetchOrders();
+    fetchBusinessSettings();
+  }, [fetchOrders, fetchBusinessSettings]);
+
   // During the initial load, show a full-page loader.
   // Once the orders are loaded, incremental updates happen seamlessly.
   if (initialLoad && loading) return <Loading size="fullscreen" />;
@@ -412,6 +434,7 @@ const Orders = () => {
             isRTL={isRTL}
             onOpenAssignModal={() => setIsAssignModalOpen(true)}
             businessId={businessId}
+            businessSLA={businessSettings?.sla}
           />
         </div>
       )}
@@ -433,6 +456,7 @@ const Orders = () => {
             isRTL={isRTL}
             onBuildRoute={handleBuildRoute}
             onCancelBuildRoute={handleCancelBuildRoute}
+            businessSLA={businessSettings?.sla}
           />
           
           {/* Assign Courier Button for map view - only shown on the accepted tab */}

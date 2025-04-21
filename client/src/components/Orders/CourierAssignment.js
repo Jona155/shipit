@@ -53,15 +53,6 @@ const CourierAssignment = ({
       }
       const data = await response.json();
       
-      console.log('All users fetched:', data.length);
-      console.log('First few users:', data.slice(0, 3).map(u => ({ 
-        _id: u._id,  // This is the user_businesses _id
-        uid: u.uid,  // This is the users collection _id we need
-        name: u.name,
-        onShift: u.profiles?.messenger?.isCurrentlyOnShift,
-        available: u.profiles?.messenger?.isCurrentlyAvailable
-      })));
-      
       const filtered = data.filter(
         user =>
           user.profiles?.messenger &&
@@ -73,13 +64,6 @@ const CourierAssignment = ({
         _id: user._id,        // user_businesses _id
         uid: user.uid         // users collection _id
       }));
-      
-      console.log('Filtered available couriers:', filtered.length);
-      console.log('Available couriers:', filtered.map(u => ({ 
-        _id: u._id,
-        uid: u.uid,
-        name: u.name
-      })));
       
       setAvailableCouriers(filtered);
     } catch (err) {
@@ -118,15 +102,8 @@ const CourierAssignment = ({
     }
 
     try {
-      // Very detailed logging for debugging
-      console.log('===== DEBUGGING COURIER ASSIGNMENT =====');
-      console.log('Selected courier ID:', selectedCourier);
-      console.log('Available couriers:', availableCouriers);
-      console.log('Selected orders:', selectedOrders);
-      
       // Find the selected courier object from available couriers
       const selectedCourierObj = availableCouriers.find(c => c._id === selectedCourier);
-      console.log('Selected courier object:', selectedCourierObj);
       
       if (!selectedCourierObj) {
         throw new Error('Selected courier not found in available couriers');
@@ -138,7 +115,6 @@ const CourierAssignment = ({
         courier_uid: selectedCourierObj.uid,  // Use the uid which maps to users collection _id
         order_ids: selectedOrders
       };
-      console.log('Sending payload:', JSON.stringify(payload, null, 2));
       
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/delivery-group/assign`, {
         method: 'POST',
@@ -148,9 +124,7 @@ const CourierAssignment = ({
         body: JSON.stringify(payload),
       });
 
-      console.log('Response status:', response.status);
       const responseText = await response.text();
-      console.log('Response text:', responseText);
       
       if (!response.ok) {
         let errorData;
@@ -163,7 +137,6 @@ const CourierAssignment = ({
       }
 
       const data = JSON.parse(responseText);
-      console.log('Assignment succeeded:', data);
       // Pass the updated_orders from the response to maintain compatibility with parent component
       onAssignCourier(data.updated_orders);
       onClose();

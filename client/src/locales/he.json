@@ -204,5 +204,7 @@
   "delivery_group_aborted": "שיוך קבוצת המשלוח בוטל בהצלחה",
 
   "analytics_coming_soon_title": "בקרוב!",
-  "analytics_coming_soon_message": "אנחנו עובדים קשה כדי להביא לכם יכולות אנליטיקס מתקדמות. חזרו לכאן בקרוב!"
+  "analytics_coming_soon_message": "אנחנו עובדים קשה כדי להביא לכם יכולות אנליטיקס מתקדמות. חזרו לכאן בקרוב!",
+
+  "order_sla": "זמן SLA"
 }

@@ -26,7 +26,8 @@ const OrdersCards = ({
   onCancelBuildRoute,
   isRTL,
   onOpenAssignModal,
-  businessId
+  businessId,
+  businessSLA
 }) => {
   const { t } = useTranslation();
 
@@ -139,6 +140,7 @@ const OrdersCards = ({
                     onReturnToOnTheirWay={onReturnToOnTheirWay}
                     isVendorPage={isVendorPage}
                     isRTL={isRTL}
+                    businessSLA={businessSLA}
                   />
                 ))}
               </React.Fragment>

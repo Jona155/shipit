@@ -85,4 +85,36 @@
 .rtl .map-popup-content {
   direction: rtl;
   text-align: right;
+}
+
+.popup-sla-timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.popup-sla-timer p {
+  margin: 0;
+}
+
+.popup-sla-timer .timer-container {
+  display: flex;
+  align-items: center;
+}
+
+/* New leaflet popup styles to make more space for the timer */
+.leaflet-popup-content {
+  min-width: 200px;
+}
+
+/* RTL direction for Hebrew language */
+html[lang="he"] .leaflet-popup-content {
+  direction: rtl;
+}
+
+/* LTR direction for English language */
+html[lang="en"] .leaflet-popup-content {
+  direction: ltr;
 } 

@@ -354,4 +354,23 @@
 
 .build-route-button.cancel.header-button:hover {
   background-color: #c82333;
+}
+
+.order-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  flex-wrap: nowrap;
+}
+
+.timer-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+}
+
+.sla-timer {
+  margin-right: 8px;
 } 

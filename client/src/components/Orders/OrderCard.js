@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getOrderStatus } from './orderUtils';
+import SLATimer from './SLATimer';
 
 const OrderCard = ({
   order,
@@ -11,7 +12,8 @@ const OrderCard = ({
   onUnassignOrder,
   onReturnToOnTheirWay,
   isVendorPage,
-  isRTL
+  isRTL,
+  businessSLA
 }) => {
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
@@ -21,6 +23,26 @@ const OrderCard = ({
   const partnerName = order.third_party
     ? (isVendorPage ? (order.sent_from || '-') : (order.sent_to_3rd_party || '-'))
     : '-';
+
+  // Get order time from the order status array and adjust for Israel timezone (UTC+3)
+  const getAdjustedOrderTime = () => {
+    let timestamp;
+    if (order.status && order.status.length > 0) {
+      timestamp = order.status[order.status.length - 1].timestamp; // Last status is the earliest
+    } else {
+      timestamp = order.creation_time || order.created_at || new Date().toISOString(); // Fallback
+    }
+    
+    // Create a date object from the timestamp
+    const utcDate = new Date(timestamp);
+    
+    // Add 3 hours to adjust for Israel timezone (UTC+3)
+    const israelDate = new Date(utcDate.getTime() + (3 * 60 * 60 * 1000));
+    
+    return israelDate.toISOString();
+  };
+
+  const orderTime = getAdjustedOrderTime();
 
   return (
     <div className={`order-card ${isRTL ? 'rtl' : 'ltr'}`}>
@@ -36,8 +58,15 @@ const OrderCard = ({
           )}
           {order.short_id || order._id}
         </div>
-        <div className={`order-status status-${orderStatus}`}>
-          {t(orderStatus)}
+        <div className="order-header-right">
+          {businessSLA && orderTime && (
+            <div className="timer-container">
+              <SLATimer orderTime={orderTime} slaMinutes={businessSLA} />
+            </div>
+          )}
+          <div className={`order-status status-${orderStatus}`}>
+            {t(orderStatus)}
+          </div>
         </div>
       </div>
       
