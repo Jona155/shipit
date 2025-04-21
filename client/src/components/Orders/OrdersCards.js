@@ -82,14 +82,25 @@ const OrdersCards = ({
             );
           })}
         </div>
-        {isMapView && (
-          <button
-            className={`build-route-button ${isSelectingForRoute ? 'cancel' : ''} ${isRTL ? 'rtl' : 'ltr'}`}
-            onClick={isSelectingForRoute ? onCancelBuildRoute : onBuildRoute}
-          >
-            {isSelectingForRoute ? t('cancel_build_route') : t('build_route')}
-          </button>
-        )}
+        {/* New container for action buttons */}
+        <div className="header-action-buttons">
+          {activeTab === 'accepted' && (
+            <button 
+              className={`add-order-button header-button ${isRTL ? 'rtl' : 'ltr'}`} 
+              onClick={onAddOrder}
+            >
+              {t('add_order')}
+            </button>
+          )}
+          {isMapView && (
+            <button
+              className={`build-route-button header-button ${isSelectingForRoute ? 'cancel' : ''} ${isRTL ? 'rtl' : 'ltr'}`}
+              onClick={isSelectingForRoute ? onCancelBuildRoute : onBuildRoute}
+            >
+              {isSelectingForRoute ? t('cancel_build_route') : t('build_route')}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* For on_their_way tab, use the DeliveryGroupsView instead of cards */}
@@ -136,21 +147,8 @@ const OrdersCards = ({
         </div>
       )}
 
-      <div className="add-order-row">
-        {activeTab === 'accepted' && (
-          <>
-            <button 
-              className={`add-order-button ${isRTL ? 'rtl' : 'ltr'}`} 
-              onClick={onAddOrder}
-            >
-              {t('add_order')}
-            </button>
-          </>
-        )}
-      </div>
-      
-      {/* Assign Courier Button - only shown on the accepted tab */}
-      {activeTab === 'accepted' && (
+      {/* Assign Courier Button - only shown on the accepted tab and not in map view */}
+      {activeTab === 'accepted' && !isMapView && (
         <div className="assign-courier-fixed-container">
           <button 
             className="assign-courier-button" 

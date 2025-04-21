@@ -7,9 +7,11 @@
 
 .orders-card-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 16px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .search-input {
@@ -17,13 +19,14 @@
   border: 1px solid #e1e1e1;
   border-radius: 4px;
   font-size: 16px;
-  width: 100%;
+  flex-grow: 1;
+  min-width: 150px;
 }
 
 .tabs {
   display: flex;
   border-bottom: 1px solid #e1e1e1;
-  margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .tab {
@@ -34,6 +37,7 @@
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s;
+  white-space: nowrap;
 }
 
 .tab.active {
@@ -194,12 +198,6 @@
   background-color: #2a66cf;
 }
 
-.add-order-row {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
 .add-order-button {
   padding: 10px 20px;
   background-color: #3a86ff;
@@ -305,4 +303,55 @@
     right: auto;
     left: 15px;
   }
+}
+
+/* Container for header action buttons */
+.header-action-buttons {
+  display: flex;       /* Arrange buttons in a row */
+  gap: 8px;          /* Space between buttons if multiple are shown */
+  margin-left: auto; /* Push container to the right (LTR default) */
+}
+
+.rtl .header-action-buttons {
+  margin-left: unset; /* Remove LTR margin */
+  margin-right: auto; /* Push container to the left in RTL */
+}
+
+/* Style for buttons placed directly in the header */
+.header-button {
+  padding: 8px 16px;
+  background-color: #3a86ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.header-button:hover {
+  background-color: #2a66cf;
+}
+
+.add-order-button.header-button {
+  /* Specific styles for add order if needed, inherits from .header-button */
+}
+
+.build-route-button.header-button {
+  /* Specific styles for build route, inherits from .header-button */
+  background-color: #6c757d;
+}
+
+.build-route-button.header-button:hover {
+  background-color: #5a6268;
+}
+
+.build-route-button.cancel.header-button {
+  background-color: #dc3545;
+}
+
+.build-route-button.cancel.header-button:hover {
+  background-color: #c82333;
 } 

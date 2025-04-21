@@ -107,7 +107,7 @@ const Orders = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchOrders();
-    }, 86400000);
+    }, 30000);
     return () => clearInterval(interval);
   }, [businessId, fetchOrders]);
 
