@@ -111,7 +111,7 @@ const CourierAssignment = ({
 
   const handleAssign = async () => {
     if (courierType === 'inhouse' && !selectedCourier) {
-      showAlertMessage(t('select_courier'));
+      showAlertMessage(t('select_courier'), 'error');
       return;
     }
 
@@ -167,7 +167,7 @@ const CourierAssignment = ({
       onClose();
     } catch (error) {
       console.error('Assignment error:', error);
-      showAlertMessage(t('error_assigning_orders'));
+      showAlertMessage(t('error_assigning_orders'), 'error');
     }
   };
 

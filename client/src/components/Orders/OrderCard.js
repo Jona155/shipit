@@ -48,6 +48,11 @@ const OrderCard = ({
         </div>
         
         <div className="order-detail">
+          <div className="detail-label">{t('orders_phone_number')}:</div>
+          <div className="detail-value">{order.customer_phone_number}</div>
+        </div>
+        
+        <div className="order-detail">
           <div className="detail-label">{t('orders_address')}:</div>
           <div className="detail-value">{order.address}</div>
         </div>
@@ -66,12 +71,17 @@ const OrderCard = ({
                 : (order.courier_name || order.courier_id || t('orders_unassigned'))}
             </div>
           </div>
+          
         )}
         
-        <div className="order-detail">
-          <div className="detail-label">{isVendorPage ? t('orders_partner_restaurant') : t('orders_partner_vendor')}:</div>
-          <div className="detail-value">{partnerName}</div>
-        </div>
+        {(activeTab === 'on_their_way' || activeTab === 'finished') && (
+          <div className="order-detail">
+            <div className="detail-label">{isVendorPage ? t('orders_partner_restaurant') : t('orders_partner_vendor')}:</div>
+            <div className="detail-value">
+              {partnerName}
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="order-card-actions">

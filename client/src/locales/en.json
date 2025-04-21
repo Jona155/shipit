@@ -35,6 +35,7 @@
   "orders_select": "Select",
   "orders_id": "Order ID",
   "orders_customer": "Customer",
+  "orders_phone_number": "Phone number",
   "orders_address": "Address",
   "orders_items": "Items",
   "orders_status": "Status",

@@ -28,6 +28,7 @@
   "orders_select": "סמן הזמנה",
   "orders_id": "מזהה הזמנה",
   "orders_customer": "שם הלקוח",
+  "orders_phone_number": "מספר טלפון",
   "orders_address": "כתובת",
   "orders_items": "פרטי הזמנה",
   "orders_status": "סטטוס",

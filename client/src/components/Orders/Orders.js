@@ -30,6 +30,7 @@ const Orders = () => {
   const [activeView, setActiveView] = useState('table');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [alertType, setAlertType] = useState('success');
   const [showOrderForm, setShowOrderForm] = useState(false);
 
   // Ref to hold the latest orders for incremental polling
@@ -136,6 +137,7 @@ const Orders = () => {
       }
       const matchesSearch =
         (item.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.customer_phone_number?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (item.address?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (item.comments_for_order?.toLowerCase().includes(searchTerm.toLowerCase())) ||
         searchTerm === '';
@@ -177,10 +179,11 @@ const Orders = () => {
     []
   );
 
-  const showAlertMessage = useCallback(message => {
+  const showAlertMessage = useCallback((message, type = 'success') => {
     setAlertMessage(message);
+    setAlertType(type);
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+    setTimeout(() => setShowAlert(false), 4000);
   }, []);
 
   const handleAssignCourier = useCallback(
@@ -213,7 +216,7 @@ const Orders = () => {
       setSelectedOrders([]);
       setIsSelectingForRoute(false);
       setIsAssignModalOpen(false);
-      showAlertMessage(t('orders_assigned_success'));
+      showAlertMessage(t('orders_assigned_success'), 'success');
       
       // Refresh orders without changing tabs
       setTimeout(() => {
@@ -227,9 +230,10 @@ const Orders = () => {
     async orderId => {
       try {
         await updateOrderStatus(orderId, 'DELIVERED');
-        showAlertMessage(t('order_finished'));
+        showAlertMessage(t('order_finished'), 'success');
       } catch (err) {
         setError(err.message);
+        showAlertMessage(err.message, 'error');
       }
     },
     [updateOrderStatus, t, showAlertMessage]
@@ -240,13 +244,14 @@ const Orders = () => {
       try {
         if (activeTab === 'finished') {
           await updateOrderStatus(orderId, 'ACCEPTED');
-          showAlertMessage(t('order_returned_to_accepted'));
+          showAlertMessage(t('order_returned_to_accepted'), 'success');
         } else {
           await updateOrderStatus(orderId, 'COLLECTED');
-          showAlertMessage(t('order_returned_to_on_their_way'));
+          showAlertMessage(t('order_returned_to_on_their_way'), 'success');
         }
       } catch (err) {
         setError(err.message);
+        showAlertMessage(err.message, 'error');
       }
     },
     [activeTab, updateOrderStatus, t, showAlertMessage]
@@ -256,9 +261,10 @@ const Orders = () => {
     async orderId => {
       try {
         await updateOrderStatus(orderId, 'READY');
-        showAlertMessage(t('order_unassigned'));
+        showAlertMessage(t('order_unassigned'), 'success');
       } catch (err) {
         setError(err.message);
+        showAlertMessage(err.message, 'error');
       }
     },
     [updateOrderStatus, t, showAlertMessage]
@@ -276,11 +282,12 @@ const Orders = () => {
       );
       if (!response.ok) throw new Error('Failed to finish delivery group');
       await response.json();
-      showAlertMessage(t('delivery_group_finished'));
+      showAlertMessage(t('delivery_group_finished'), 'success');
       setDeliveryGroups(prev => prev.filter(group => group._id !== deliveryGroupId));
     } catch (err) {
       console.error(err);
       setError(err.message);
+      showAlertMessage(err.message, 'error');
     }
   };
 
@@ -296,7 +303,7 @@ const Orders = () => {
       );
       if (!response.ok) throw new Error('Failed to abort delivery group');
       await response.json();
-      showAlertMessage(t('delivery_group_aborted', 'Delivery group assignment cancelled'));
+      showAlertMessage(t('delivery_group_aborted', 'Delivery group assignment cancelled'), 'info');
       
       // Remove the aborted delivery group from the state
       setDeliveryGroups(prev => prev.filter(group => group._id !== deliveryGroupId));
@@ -306,6 +313,7 @@ const Orders = () => {
     } catch (err) {
       console.error(err);
       setError(err.message);
+      showAlertMessage(err.message, 'error');
     }
   };
 
@@ -314,6 +322,7 @@ const Orders = () => {
     // Validate location & place_id
     if (!newOrder.location || !newOrder.place_id) {
       setError('Location and place_id are required for new orders.');
+      showAlertMessage(t('location_place_id_required'), 'error');
       return;
     }
 
@@ -336,12 +345,13 @@ const Orders = () => {
       // Update local state
       setOrders(prev => [...prev, createdOrder]);
       setShowOrderForm(false);
-      showAlertMessage(t('order_added_success'));
+      showAlertMessage(t('order_added_success'), 'success');
 
       // Instead of adding createdOrder manually:
       await fetchOrders();
     } catch (err) {
       setError(err.message);
+      showAlertMessage(err.message, 'error');
     }
   };
 
@@ -452,7 +462,7 @@ const Orders = () => {
           <OrderForm onSubmit={handleAddOrder} onClose={() => setShowOrderForm(false)} />
         </div>
       )}
-      {showAlert && <Alert message={alertMessage} />}
+      {showAlert && <Alert message={alertMessage} type={alertType} />}
     </div>
   );
 };
