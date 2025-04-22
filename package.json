@@ -7,12 +7,9 @@
   },
   "scripts": {
     "start": "cd server && python app.py",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd client && npm install --no-cache && npm run build",
+    "clean": "rm -rf node_modules client/node_modules"
   },
-  "cacheDirectories": [
-    "client/node_modules"
-  ],
-  "dependencies": {
-    "react-circular-progressbar": "^2.2.0"
-  }
+  "cacheDirectories": [],
+  "dependencies": {}
 }
