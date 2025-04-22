@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 import './SLATimer.css';
 
 const SLATimer = ({ orderTime, slaMinutes }) => {
@@ -105,64 +107,32 @@ const SLATimer = ({ orderTime, slaMinutes }) => {
     
     return () => clearInterval(intervalId);
   }, [orderTime, slaMinutes, isHebrew]);
-
-  // Increase the radius for longer text
-  const radius = textLength === 'medium' ? 20 : 18;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference - (Math.min(elapsedTime, 100) / 100) * circumference;
   
-  // Adjust SVG size based on text length
-  const svgSize = textLength === 'medium' ? 56 : 50;
-  const centerPoint = svgSize / 2;
-  
-  // Adjust font size based on text length
-  const fontSize = textLength === 'medium' ? 12 : 13;
+  // Define size for the circular progress
+  const size = textLength === 'medium' ? 56 : 50;
   
   return (
     <div className={`sla-timer ${textLength} ${isHebrew ? 'rtl' : 'ltr'}`}>
-      <svg className="sla-timer-circle" width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`}>
-        {/* Background dashed circle */}
-        <circle 
-          cx={centerPoint} 
-          cy={centerPoint} 
-          r={radius} 
-          fill="transparent" 
-          stroke="#e0e0e0" 
-          strokeWidth="2"
-          strokeDasharray="3,3"
-          className="timer-background"
+      <div style={{ width: size, height: size }}>
+        <CircularProgressbar
+          value={Math.min(elapsedTime, 100)}
+          text={elapsedDisplay}
+          strokeWidth={6}
+          styles={buildStyles({
+            // Set path color based on progress
+            pathColor: progressColor,
+            // Customize text style
+            textSize: textLength === 'medium' ? '26px' : '30px',
+            textColor: '#333',
+            fontWeight: 600,
+            // Trail/background style
+            trailColor: '#e0e0e0',
+            // Make trail dashed
+            trailLineCap: 'round',
+            pathTransition: 'stroke-dashoffset 0.5s ease 0s',
+          })}
         />
-        
-        {/* Progress circle */}
-        <circle 
-          cx={centerPoint} 
-          cy={centerPoint} 
-          r={radius} 
-          fill="transparent" 
-          stroke={progressColor} 
-          strokeWidth="2" 
-          strokeDasharray={circumference}
-          strokeDashoffset={dashOffset}
-          strokeLinecap="round"
-          transform={`rotate(-90 ${centerPoint} ${centerPoint})`}
-          className="timer-progress"
-        />
-        
-        {/* Inner text for elapsed time with translation */}
-        <text 
-          x={centerPoint} 
-          y={centerPoint} 
-          textAnchor="middle" 
-          dominantBaseline="middle" 
-          fill="#333" 
-          fontSize={fontSize}
-          fontWeight="500"
-          className="timer-text"
-          dir={isHebrew ? "rtl" : "ltr"}
-        >
-          {elapsedDisplay}
-        </text>
-      </svg>
+      </div>
     </div>
   );
 };
