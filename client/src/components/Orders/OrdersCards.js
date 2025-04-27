@@ -26,6 +26,7 @@ const OrdersCards = ({
   onCancelBuildRoute,
   isRTL,
   onOpenAssignModal,
+  onSendToTender,
   businessId,
   businessSLA
 }) => {
@@ -138,6 +139,7 @@ const OrdersCards = ({
                     onFinishOrder={onFinishOrder}
                     onUnassignOrder={onUnassignOrder}
                     onReturnToOnTheirWay={onReturnToOnTheirWay}
+                    onSendToTender={onSendToTender}
                     isVendorPage={isVendorPage}
                     isRTL={isRTL}
                     businessSLA={businessSLA}

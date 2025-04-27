@@ -6,6 +6,7 @@ import OrdersMap from './OrdersMap';
 import Alert from './Alert';
 import OrderForm from './OrderForm';
 import CourierAssignment from './CourierAssignment';
+import TenderModal from './TenderModal';
 import Loading from '../common/Loading';
 import { useTranslation } from 'react-i18next';
 import { getOrderStatus } from "./orderUtils";
@@ -27,6 +28,8 @@ const Orders = () => {
   const [activeTab, setActiveTab] = useState('accepted');
   const [searchTerm, setSearchTerm] = useState('');
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isTenderModalOpen, setIsTenderModalOpen] = useState(false);
+  const [selectedOrderForTender, setSelectedOrderForTender] = useState(null);
   const [selectedCourier, setSelectedCourier] = useState('');
   const [isSelectingForRoute, setIsSelectingForRoute] = useState(false);
   const [activeView, setActiveView] = useState('table');
@@ -366,16 +369,24 @@ const Orders = () => {
   // New function to fetch business settings
   const fetchBusinessSettings = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/businesses/${businessId}`);
-      if (!response.ok) throw new Error('Failed to fetch business settings');
-      const businessData = await response.json();
+      // First, try to get the business data from localStorage
+      const storedBusiness = localStorage.getItem('currentBusiness');
       
-      // Extract SLA from business settings with a default value
-      const settings = {
-        sla: businessData.sla || 30 // Default to 30 minutes if not set
-      };
-      
-      setBusinessSettings(settings);
+      if (storedBusiness) {
+        const businessData = JSON.parse(storedBusiness);
+        setBusinessSettings({
+          sla: businessData.sla || 30 // Default to 30 minutes if not set
+        });
+      } else {
+        // Fall back to API call if localStorage data isn't available
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/businesses/${businessId}`);
+        if (!response.ok) throw new Error('Failed to fetch business settings');
+        const businessData = await response.json();
+        
+        setBusinessSettings({
+          sla: businessData.sla || 30 // Default to 30 minutes if not set
+        });
+      }
     } catch (err) {
       console.error('Error fetching business settings:', err);
       // Set default values if fetch fails
@@ -388,6 +399,70 @@ const Orders = () => {
     fetchOrders();
     fetchBusinessSettings();
   }, [fetchOrders, fetchBusinessSettings]);
+
+  // Add handler for opening the tender modal
+  const handleOpenTenderModal = useCallback((orderId) => {
+    setSelectedOrderForTender(orderId);
+    setIsTenderModalOpen(true);
+  }, []);
+  
+  // Add handler for sending an order to tender
+  const handleSendToTender = useCallback(async (orderId, vendorIds) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      // Clean up the API URL to ensure it's correct
+      let apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      // Remove any trailing special characters
+      apiBaseUrl = apiBaseUrl.replace(/[%\s]+$/, '');
+      
+      const response = await fetch(
+        `${apiBaseUrl}/api/orders/tender`,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'authToken': token 
+          },
+          body: JSON.stringify({ 
+            order_id: orderId, 
+            vendor_ids: vendorIds 
+          })
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to send order to tender');
+      }
+      
+      const result = await response.json();
+      
+      // Update the order in state with tender information
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId 
+            ? { 
+                ...order, 
+                tender_scope: result.updated_order.tender_scope,
+                in_tender: true,
+                selected_vendor: null
+              } 
+            : order
+        )
+      );
+      
+      showAlertMessage(
+        t('tender_sent_success', { count: vendorIds.length }),
+        'success'
+      );
+      
+      return result;
+    } catch (err) {
+      console.error('Error sending to tender:', err);
+      showAlertMessage(err.message, 'error');
+      throw err;
+    }
+  }, [t, showAlertMessage]);
 
   // During the initial load, show a full-page loader.
   // Once the orders are loaded, incremental updates happen seamlessly.
@@ -433,6 +508,7 @@ const Orders = () => {
             onCancelBuildRoute={handleCancelBuildRoute}
             isRTL={isRTL}
             onOpenAssignModal={() => setIsAssignModalOpen(true)}
+            onSendToTender={handleOpenTenderModal}
             businessId={businessId}
             businessSLA={businessSettings?.sla}
           />
@@ -489,6 +565,13 @@ const Orders = () => {
         </div>
       )}
       {showAlert && <Alert message={alertMessage} type={alertType} />}
+      <TenderModal
+        isOpen={isTenderModalOpen}
+        onClose={() => setIsTenderModalOpen(false)}
+        orderId={selectedOrderForTender}
+        businessId={businessId}
+        onSendTender={handleSendToTender}
+      />
     </div>
   );
 };

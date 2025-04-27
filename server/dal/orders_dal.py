@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 import dateutil.parser
 import logging
+import uuid
 
 class OrdersDAL:
     def __init__(self, db):
@@ -154,3 +155,55 @@ class OrdersDAL:
             created_order["order_time"] = created_order["order_time"].isoformat()
 
         return created_order
+
+    def send_to_tender(self, order_id, tender_scope):
+        """
+        Update an order to mark it as being in tender process.
+        
+        Args:
+            order_id: The ID of the order to update
+            tender_scope: Array of objects containing tender_bid and status fields
+            
+        Returns:
+            The updated order document or None if order was not found
+        """
+        # First check if the order exists and is in an assignable state
+        order = self.db.orders.find_one({"_id": order_id})
+        if not order:
+            return None
+            
+        # Update the order with the tender scope and add a new status entry
+        update_data = {
+            "$set": {
+                "tender_scope": tender_scope,
+                "selected_vendor": None,  # Initialize as null
+                "in_tender": True  # Flag to indicate active tender
+            },
+            "$push": {
+                "status": {
+                    "$each": [{
+                        "value": "IN_TENDER",
+                        "timestamp": datetime.utcnow()
+                    }],
+                    "$position": 0
+                }
+            }
+        }
+        
+        result = self.db.orders.update_one({"_id": order_id}, update_data)
+        
+        if result.modified_count == 0:
+            return None
+            
+        # Fetch the updated order
+        updated_order = self.db.orders.find_one({"_id": order_id})
+        
+        # Convert ObjectId to string for JSON serialization
+        updated_order['_id'] = str(updated_order['_id'])
+        
+        # Format timestamp for JSON
+        for status in updated_order.get('status', []):
+            if 'timestamp' in status and hasattr(status['timestamp'], 'isoformat'):
+                status['timestamp'] = status['timestamp'].isoformat()
+                
+        return updated_order

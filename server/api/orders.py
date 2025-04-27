@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from services.database import get_db
 import logging
 from dal.orders_dal import OrdersDAL
+from dal.auth_dal import AuthDAL
 
 bp = Blueprint('orders', __name__, url_prefix='/api/orders')
 
@@ -73,6 +74,62 @@ def update_order_status():
         return jsonify({"message": "Orders updated successfully", "updated_orders": updated_orders}), 200
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@bp.route('/tender', methods=['POST'])
+def send_to_tender():
+    """
+    Send an order to tender by creating a tender_scope array with selected vendors.
+    
+    Expects JSON:
+    {
+        "order_id": "order_id",
+        "vendor_ids": ["vendor_id1", "vendor_id2", ...]
+    }
+    """
+    try:
+        db = get_db()
+        orders_dal = OrdersDAL(db)
+        auth_dal = AuthDAL(db)
+        
+        # Get the token from the request header
+        token = request.headers.get('authToken')
+        if not token:
+            return jsonify({"error": "No token provided"}), 401
+            
+        # Validate the token and get the user ID
+        user_id = auth_dal.validate_token(token)
+        if not user_id:
+            return jsonify({"error": "Invalid or expired token"}), 401
+            
+        data = request.json
+        
+        order_id = data.get('order_id')
+        vendor_ids = data.get('vendor_ids', [])
+        
+        if not order_id or not vendor_ids:
+            return jsonify({"error": "Missing order_id or vendor_ids"}), 400
+        
+        # Create tender scope entries for each vendor
+        tender_scope = []
+        for vendor_id in vendor_ids:
+            tender_scope.append({
+                "tender_bid": vendor_id,
+                "status": "PENDING"
+            })
+        
+        # Update the order with tender information
+        updated_order = orders_dal.send_to_tender(order_id, tender_scope)
+        
+        if not updated_order:
+            return jsonify({"error": "Order not found or cannot be sent to tender"}), 404
+            
+        return jsonify({
+            "message": f"Tender sent to {len(vendor_ids)} vendors", 
+            "updated_order": updated_order
+        }), 200
+    except Exception as e:
+        logging.error(f"Error sending order to tender: {str(e)}")
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 # server/api/orders.py

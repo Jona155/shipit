@@ -206,5 +206,14 @@
   "analytics_coming_soon_title": "בקרוב!",
   "analytics_coming_soon_message": "אנחנו עובדים קשה כדי להביא לכם יכולות אנליטיקס מתקדמות. חזרו לכאן בקרוב!",
 
-  "order_sla": "זמן SLA"
+  "order_sla": "זמן SLA",
+  
+  "send_to_tender": "שלח למכרז",
+  "send_to_tender_tooltip": "שלח הזמנה זו לספקים מחוברים",
+  "in_tender": "במכרז",
+  "loading_vendors": "טוען ספקים...",
+  "no_connected_vendors": "אין ספקים מחוברים זמינים",
+  "select_vendors_for_tender": "בחר ספקים להזמין למכרז זה:",
+  "tender_sent_success": "מכרז נשלח ל-{{count}} ספקים",
+  "error_sending_tender": "שגיאה בשליחת ההזמנה למכרז"
 }

@@ -11,6 +11,7 @@ const OrderCard = ({
   onFinishOrder,
   onUnassignOrder,
   onReturnToOnTheirWay,
+  onSendToTender,
   isVendorPage,
   isRTL,
   businessSLA
@@ -43,6 +44,12 @@ const OrderCard = ({
   };
 
   const orderTime = getAdjustedOrderTime();
+  
+  // Check if order is assignable (can be sent to tender)
+  const isAssignable = orderStatus === 'accepted' && !order.in_tender;
+  
+  // Check if order is already in tender
+  const isInTender = order.in_tender === true;
 
   return (
     <div className={`order-card ${isRTL ? 'rtl' : 'ltr'}`}>
@@ -66,6 +73,7 @@ const OrderCard = ({
           )}
           <div className={`order-status status-${orderStatus}`}>
             {t(orderStatus)}
+            {isInTender && <span className="tender-badge">{t('in_tender')}</span>}
           </div>
         </div>
       </div>
@@ -136,6 +144,15 @@ const OrderCard = ({
             onClick={() => onReturnToOnTheirWay(order._id)}
           >
             {t('orders_return')}
+          </button>
+        )}
+        {isAssignable && !isVendorPage && (
+          <button
+            className="action-button tender-button"
+            onClick={() => onSendToTender(order._id)}
+            title={t('send_to_tender_tooltip')}
+          >
+            {t('send_to_tender')}
           </button>
         )}
       </div>

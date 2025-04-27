@@ -11,7 +11,7 @@ from dal.businesses_dal import BusinessesDAL  # To fetch vendor details
 bp = Blueprint('connections', __name__, url_prefix='/api/connections')
 
 
-@bp.route('/business/<business_id>')
+@bp.route('/business/<business_id>', methods=['GET'])
 def get_business_connections(business_id):
     try:
         db = get_db()

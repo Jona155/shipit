@@ -58,6 +58,11 @@ const BusinessList = () => {
     business.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleBusinessClick = (business) => {
+    // Save only the clicked business data to localStorage
+    localStorage.setItem('currentBusiness', JSON.stringify(business));
+  };
+
   if (!isLoggedIn) {
     return null;
   }
@@ -81,9 +86,11 @@ const BusinessList = () => {
         <ul>
           {filteredBusinesses.map(business => (
             <li key={business._id}>
-              <Link to={`/shipit/${business._id}`}>
+              <Link to={`/shipit/${business._id}`} onClick={() => handleBusinessClick(business)}>
                 <h2>{business.name}</h2>
                 <p>{business.address}</p>
+                {business.business_type && <p><strong>Type:</strong> {business.business_type}</p>}
+                {business.sla && <p><strong>SLA:</strong> {business.sla}</p>}
               </Link>
             </li>
           ))}

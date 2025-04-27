@@ -29,10 +29,10 @@ def get_businesses():
         user = users_dal.get_user(user_id)
         if user and user.get('isApplicationManager'):
             # If the user is an application manager, fetch all businesses
-            businesses = businesses_dal.get_businesses(fields=["_id", "name", "address"])
+            businesses = businesses_dal.get_businesses(fields=["_id", "name", "address", "business_type", "sla"])
         else:
             # Otherwise, fetch only businesses associated with this user
-            businesses = businesses_dal.get_businesses_for_user(user_id, fields=["_id", "name", "address"])
+            businesses = businesses_dal.get_businesses_for_user(user_id, fields=["_id", "name", "address", "business_type", "sla"])
 
         return jsonify(businesses)
     except Exception as e:

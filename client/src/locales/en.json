@@ -210,5 +210,14 @@
   "analytics_coming_soon_title": "Coming Soon!",
   "analytics_coming_soon_message": "We are working hard to bring you amazing analytics features. Check back later!",
 
-  "order_sla": "SLA Time"
+  "order_sla": "SLA Time",
+
+  "send_to_tender": "Send to Tender",
+  "send_to_tender_tooltip": "Broadcast this order to connected vendors",
+  "in_tender": "In Tender",
+  "loading_vendors": "Loading vendors...",
+  "no_connected_vendors": "No connected vendors available",
+  "select_vendors_for_tender": "Select vendors to invite to this tender:",
+  "tender_sent_success": "Tender sent to {{count}} vendors",
+  "error_sending_tender": "Error sending order to tender"
 }
