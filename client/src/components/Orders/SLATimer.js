@@ -22,10 +22,6 @@ const SLATimer = ({ orderTime, slaMinutes }) => {
       // Create a date object from the timestamp (assuming it's in UTC)
       const date = new Date(timestamp);
       
-      // Log the original timestamp and parsed date for debugging
-      console.log('Original timestamp:', timestamp);
-      console.log('Parsed date:', date.toISOString());
-      
       return date;
     };
 
@@ -38,11 +34,7 @@ const SLATimer = ({ orderTime, slaMinutes }) => {
       
       // Calculate elapsed time
       const elapsed = now - orderDate;
-      
-      // Log the values for debugging
-      console.log('Current time:', now.toISOString());
-      console.log('Order time (adjusted):', orderDate.toISOString());
-      console.log('Elapsed milliseconds:', elapsed);
+  
       
       return elapsed;
     };
