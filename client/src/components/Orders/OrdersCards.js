@@ -27,8 +27,13 @@ const OrdersCards = ({
   isRTL,
   onOpenAssignModal,
   onSendToTender,
+  onCancelTender,
   businessId,
-  businessSLA
+  businessType,
+  onApproveTender,
+  onDisapproveTender,
+  businessSLA,
+  onViewTenderStatus
 }) => {
   const { t } = useTranslation();
 
@@ -140,7 +145,12 @@ const OrdersCards = ({
                     onUnassignOrder={onUnassignOrder}
                     onReturnToOnTheirWay={onReturnToOnTheirWay}
                     onSendToTender={onSendToTender}
+                    onViewTenderStatus={onViewTenderStatus}
+                    onCancelTender={onCancelTender}
+                    onApproveTender={onApproveTender}
+                    onDisapproveTender={onDisapproveTender}
                     isVendorPage={isVendorPage}
+                    businessType={businessType}
                     isRTL={isRTL}
                     businessSLA={businessSLA}
                   />

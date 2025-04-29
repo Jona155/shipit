@@ -17,12 +17,6 @@ const OrderRow = ({
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
 
-  // In vendor view, show the restaurant name (order.sent_from)
-  // In restaurant view, show the vendor name (order.sent_to_3rd_party)
-  const partnerName = order.third_party
-    ? (isVendorPage ? (order.sent_from || '-') : (order.sent_to_3rd_party || '-'))
-    : '-';
-
   return (
     <tr>
       {activeTab === 'accepted' && (
@@ -39,12 +33,9 @@ const OrderRow = ({
       <td className={isRTL ? 'rtl' : 'ltr'}>{order.address}</td>
       <td className={isRTL ? 'rtl' : 'ltr'}>{order.comments_for_order}</td>
       <td className={isRTL ? 'rtl' : 'ltr'}>{t(orderStatus)}</td>
-      <td className={`partner-cell ${isRTL ? 'rtl' : 'ltr'}`}>{partnerName}</td>
       {(activeTab === 'on_their_way' || activeTab === 'finished') && (
         <td className={isRTL ? 'rtl' : 'ltr'}>
-          {order.third_party && order.sent_from
-            ? t('orders_received_from', { restaurant: order.sent_from })
-            : (order.courier_name || order.courier_id || t('orders_unassigned'))}
+          {order.courier_name || order.courier_id || t('orders_unassigned')}
         </td>
       )}
       <td className={isRTL ? 'rtl' : 'ltr'}>

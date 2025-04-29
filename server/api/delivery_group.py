@@ -56,7 +56,6 @@ def assign_courier_to_orders():
             new_status=new_status,
             courier_id=courier_uid,
             courier_name=courier_name,  # now passing the retrieved courier name
-            third_party=False  # assume in-house for now
         )
 
         # Retrieve business id from the user_businesses document:

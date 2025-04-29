@@ -7,6 +7,7 @@ import Alert from './Alert';
 import OrderForm from './OrderForm';
 import CourierAssignment from './CourierAssignment';
 import TenderModal from './TenderModal';
+import TenderStatusModal from './TenderStatusModal';
 import Loading from '../common/Loading';
 import { useTranslation } from 'react-i18next';
 import { getOrderStatus } from "./orderUtils";
@@ -29,7 +30,10 @@ const Orders = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isTenderModalOpen, setIsTenderModalOpen] = useState(false);
+  const [isTenderStatusModalOpen, setIsTenderStatusModalOpen] = useState(false);
   const [selectedOrderForTender, setSelectedOrderForTender] = useState(null);
+  const [selectedOrderForTenderStatus, setSelectedOrderForTenderStatus] = useState(null);
+  const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
   const [selectedCourier, setSelectedCourier] = useState('');
   const [isSelectingForRoute, setIsSelectingForRoute] = useState(false);
   const [activeView, setActiveView] = useState('table');
@@ -40,6 +44,7 @@ const Orders = () => {
   const [businessSettings, setBusinessSettings] = useState(null);
 
   // Ref to hold the latest orders for incremental polling
+  const businessType = localStorage.getItem('currentBusinessType');
   const ordersRef = useRef(orders);
   useEffect(() => {
     ordersRef.current = orders;
@@ -52,7 +57,23 @@ const Orders = () => {
       if (!incremental) {
         setLoading(true);
       }
-      let url = `${process.env.REACT_APP_API_URL}/api/orders/business/${businessId}?status=${activeTab}`;
+      // Make sure the API URL is clean - strip trailing slashes and default to relative URL if missing
+      const apiBaseUrl = process.env.REACT_APP_API_URL 
+        ? process.env.REACT_APP_API_URL.replace(/\/+$/, '') // Remove trailing slashes
+        : ''; // Default to relative URL if env var is not set
+      
+      let url = `${apiBaseUrl}/api/orders/business/${businessId}?status=${activeTab}`;
+      
+      // If business type is vendor, change the endpoint
+      if (businessType === 'vendor') {
+        url = `${apiBaseUrl}/api/orders/vendor/${businessId}?status=${activeTab}`;
+      }
+      
+      // Debug log the URL
+      console.log("Fetching orders from URL:", url);
+      console.log("Business type:", businessType);
+      console.log("Business ID:", businessId);
+      
       if (incremental && ordersRef.current.length > 0) {
         // Use the timestamp of the most recent order for incremental fetch
         const lastTimestamp = ordersRef.current[0].status[0].timestamp;
@@ -61,8 +82,42 @@ const Orders = () => {
       
       try {
         const response = await fetch(url);
+        // Log response status before trying to parse JSON
+        console.log("Response status:", response.status, response.statusText);
+        
+        // Check if response is ok before parsing
         if (!response.ok) throw new Error('Failed to fetch orders');
-        const data = await response.json();
+        
+        // Try to parse as JSON, catch and log the full response text if it fails
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          // Get the raw text to see what we actually received
+          const textResponse = await response.text();
+          console.error("JSON parsing failed. Raw response:", textResponse.substring(0, 500) + "...");
+          
+          // If we're in vendor mode, try again with a direct relative URL as fallback
+          if (businessType === 'vendor' && apiBaseUrl) {
+            console.log("Trying fallback with relative URL...");
+            const fallbackUrl = `/api/orders/vendor/${businessId}?status=${activeTab}`;
+            try {
+              const fallbackResponse = await fetch(fallbackUrl);
+              console.log("Fallback response status:", fallbackResponse.status);
+              if (fallbackResponse.ok) {
+                data = await fallbackResponse.json();
+                console.log("Fallback request successful!");
+              } else {
+                throw new Error(`Fallback request failed with status ${fallbackResponse.status}`);
+              }
+            } catch (fallbackError) {
+              console.error("Fallback request also failed:", fallbackError);
+              throw new Error(`Failed to parse response as JSON: ${jsonError.message}`);
+            }
+          } else {
+            throw new Error(`Failed to parse response as JSON: ${jsonError.message}`);
+          }
+        }
         
         if (incremental) {
           // Merge new orders into the existing state (update if needed)
@@ -370,12 +425,11 @@ const Orders = () => {
   const fetchBusinessSettings = useCallback(async () => {
     try {
       // First, try to get the business data from localStorage
-      const storedBusiness = localStorage.getItem('currentBusiness');
+      const storedSLA = localStorage.getItem('currentBusinessSLA');
       
-      if (storedBusiness) {
-        const businessData = JSON.parse(storedBusiness);
+      if (storedSLA) {
         setBusinessSettings({
-          sla: businessData.sla || 30 // Default to 30 minutes if not set
+          sla: parseInt(storedSLA, 10) || 30 // Use stored SLA or default
         });
       } else {
         // Fall back to API call if localStorage data isn't available
@@ -406,6 +460,13 @@ const Orders = () => {
     setIsTenderModalOpen(true);
   }, []);
   
+  // Add handler for viewing tender status
+  const handleViewTenderStatus = useCallback((orderId, orderDetails) => {
+    setSelectedOrderForTenderStatus(orderId);
+    setSelectedOrderDetails(orderDetails);
+    setIsTenderStatusModalOpen(true);
+  }, []);
+  
   // Add handler for sending an order to tender
   const handleSendToTender = useCallback(async (orderId, vendorIds) => {
     try {
@@ -414,6 +475,9 @@ const Orders = () => {
       let apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001';
       // Remove any trailing special characters
       apiBaseUrl = apiBaseUrl.replace(/[%\s]+$/, '');
+      
+      // Log the request for debugging
+      console.log("Sending order to tender:", { orderId, vendorIds });
       
       const response = await fetch(
         `${apiBaseUrl}/api/orders/tender`,
@@ -425,7 +489,7 @@ const Orders = () => {
           },
           body: JSON.stringify({ 
             order_id: orderId, 
-            vendor_ids: vendorIds 
+            vendor_ids: vendorIds // These will be used as vendor_bid values in the backend
           })
         }
       );
@@ -436,6 +500,7 @@ const Orders = () => {
       }
       
       const result = await response.json();
+      console.log("Tender response:", result);
       
       // Update the order in state with tender information
       setOrders(prevOrders =>
@@ -443,7 +508,7 @@ const Orders = () => {
           order._id === orderId 
             ? { 
                 ...order, 
-                tender_scope: result.updated_order.tender_scope,
+                tender_scope: result.updated_order.tender_scope, // This should now contain vendor_bid instead of vendor_id
                 in_tender: true,
                 selected_vendor: null
               } 
@@ -463,6 +528,127 @@ const Orders = () => {
       throw err;
     }
   }, [t, showAlertMessage]);
+
+  // Add handler for cancelling a tender
+  const handleCancelTender = useCallback(async (orderId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      let apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+      apiBaseUrl = apiBaseUrl.replace(/[%\s]+$/, ''); // Clean URL
+
+      const response = await fetch(
+        `${apiBaseUrl}/api/orders/cancel-tender`,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'authToken': token 
+          },
+          body: JSON.stringify({ order_id: orderId })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to cancel tender');
+      }
+
+      const result = await response.json();
+
+      // Update the order in state to reflect cancellation
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId 
+            ? { 
+                ...order, 
+                in_tender: false,
+                tender_scope: undefined, // Clear tender scope
+                selected_vendor: undefined // Clear selected vendor
+              } 
+            : order
+        )
+      );
+
+      showAlertMessage(t('tender_cancelled_success'), 'info');
+      return result;
+    } catch (err) {
+      console.error('Error cancelling tender:', err);
+      showAlertMessage(err.message, 'error');
+      throw err;
+    }
+  }, [t, showAlertMessage]);
+
+  // Handle closing the tender status modal with possible refresh
+  const handleCloseTenderStatusModal = useCallback((shouldRefresh = false) => {
+    setIsTenderStatusModalOpen(false);
+    if (shouldRefresh) {
+      fetchOrders();
+    }
+  }, [fetchOrders]);
+
+  // Handlers for Vendor Tender Response
+  const handleTenderResponse = useCallback(async (orderId, responseStatus) => {
+      if (!businessId) {
+          showAlertMessage('Business ID not available', 'error');
+          return;
+      }
+      
+      if (responseStatus !== 'APPROVED' && responseStatus !== 'DISAPPROVED') {
+          showAlertMessage('Invalid tender response status', 'error');
+          return;
+      }
+
+      try {
+          const token = localStorage.getItem('authToken');
+          let apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+          apiBaseUrl = apiBaseUrl.replace(/[%\s]+$/, '');
+
+          const response = await fetch(
+              `${apiBaseUrl}/api/orders/tender-response`,
+              {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'authToken': token
+                  },
+                  body: JSON.stringify({
+                      order_id: orderId,
+                      vendor_id: businessId, // Use the current businessId as vendor_id
+                      response_status: responseStatus
+                  })
+              }
+          );
+
+          if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(errorData.error || 'Failed to submit tender response');
+          }
+
+          const result = await response.json();
+
+          // Update local state - specifically the my_tender_status
+          setOrders(prevOrders =>
+              prevOrders.map(order =>
+                  order._id === orderId
+                      ? { ...order, my_tender_status: responseStatus }
+                      : order
+              )
+          );
+
+          showAlertMessage(
+              responseStatus === 'APPROVED' ? t('tender_approved_success') : t('tender_disapproved_success'),
+              'success'
+          );
+          return result;
+      } catch (err) {
+          console.error('Error submitting tender response:', err);
+          showAlertMessage(err.message, 'error');
+          throw err;
+      }
+  }, [businessId, t, showAlertMessage]);
+
+  const handleApproveTender = (orderId) => handleTenderResponse(orderId, 'APPROVED');
+  const handleDisapproveTender = (orderId) => handleTenderResponse(orderId, 'DISAPPROVED');
 
   // During the initial load, show a full-page loader.
   // Once the orders are loaded, incremental updates happen seamlessly.
@@ -509,7 +695,12 @@ const Orders = () => {
             isRTL={isRTL}
             onOpenAssignModal={() => setIsAssignModalOpen(true)}
             onSendToTender={handleOpenTenderModal}
+            onViewTenderStatus={handleViewTenderStatus}
+            onCancelTender={handleCancelTender}
+            onApproveTender={handleApproveTender}
+            onDisapproveTender={handleDisapproveTender}
             businessId={businessId}
+            businessType={businessType}
             businessSLA={businessSettings?.sla}
           />
         </div>
@@ -571,6 +762,13 @@ const Orders = () => {
         orderId={selectedOrderForTender}
         businessId={businessId}
         onSendTender={handleSendToTender}
+      />
+      <TenderStatusModal
+        isOpen={isTenderStatusModalOpen}
+        onClose={handleCloseTenderStatusModal}
+        orderId={selectedOrderForTenderStatus}
+        orderDetails={selectedOrderDetails}
+        businessId={businessId}
       />
     </div>
   );

@@ -12,18 +12,17 @@ const OrderCard = ({
   onUnassignOrder,
   onReturnToOnTheirWay,
   onSendToTender,
+  onCancelTender,
+  onViewTenderStatus,
   isVendorPage,
   isRTL,
+  businessType,
+  onApproveTender,
+  onDisapproveTender,
   businessSLA
 }) => {
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
-
-  // In vendor view, show the restaurant name (order.sent_from)
-  // In restaurant view, show the vendor name (order.sent_to_3rd_party)
-  const partnerName = order.third_party
-    ? (isVendorPage ? (order.sent_from || '-') : (order.sent_to_3rd_party || '-'))
-    : '-';
 
   // Get order time from the order status array and adjust for Israel timezone (UTC+3)
   const getAdjustedOrderTime = () => {
@@ -50,17 +49,26 @@ const OrderCard = ({
   
   // Check if order is already in tender
   const isInTender = order.in_tender === true;
+  
+  // Determine if the vendor has already responded to the tender
+  const tenderStatus = order.my_tender_status || '';
+  const hasApproved = tenderStatus === 'APPROVED';
+  const hasDeclined = tenderStatus === 'DISAPPROVED';
+  
+  // Check if a winner has been selected
+  const hasSelectedWinner = order.selected_vendor != null;
 
   return (
     <div className={`order-card ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="order-card-header">
-        <div className="order-id">
+        <div className="order-id" title={isInTender ? t('cannot_assign_while_in_tender') : ''}>
           {activeTab === 'accepted' && (
             <input
               type="checkbox"
               className="card-checkbox"
               checked={isSelected}
               onChange={() => onSelectOrder(order._id)}
+              disabled={isInTender}
             />
           )}
           {order.short_id || order._id}
@@ -73,7 +81,28 @@ const OrderCard = ({
           )}
           <div className={`order-status status-${orderStatus}`}>
             {t(orderStatus)}
-            {isInTender && <span className="tender-badge">{t('in_tender')}</span>}
+            {isInTender && (
+              <span className="status-badge-container">
+                {hasSelectedWinner ? (
+                  <span className="winner-badge">
+                    {t('winner')}: {
+                      // Find vendor in tender_scope to display name
+                      order.tender_scope?.find(vendor => 
+                        (vendor.vendor_bid || vendor.tender_bid) === order.selected_vendor
+                      )?.vendor_bid || 
+                      order.tender_scope?.find(vendor => 
+                        (vendor.vendor_bid || vendor.tender_bid) === order.selected_vendor
+                      )?.tender_bid || 
+                      order.selected_vendor
+                    }
+                  </span>
+                ) : (
+                  <span className="tender-badge">
+                    {t('in_tender')}
+                  </span>
+                )}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -103,21 +132,10 @@ const OrderCard = ({
           <div className="order-detail">
             <div className="detail-label">{t('orders_courier')}:</div>
             <div className="detail-value">
-              {order.third_party && order.sent_from
-                ? t('orders_received_from', { restaurant: order.sent_from })
-                : (order.courier_name || order.courier_id || t('orders_unassigned'))}
+              {order.courier_name || order.courier_id || t('orders_unassigned')}
             </div>
           </div>
           
-        )}
-        
-        {(activeTab === 'on_their_way' || activeTab === 'finished') && (
-          <div className="order-detail">
-            <div className="detail-label">{isVendorPage ? t('orders_partner_restaurant') : t('orders_partner_vendor')}:</div>
-            <div className="detail-value">
-              {partnerName}
-            </div>
-          </div>
         )}
       </div>
       
@@ -146,7 +164,7 @@ const OrderCard = ({
             {t('orders_return')}
           </button>
         )}
-        {isAssignable && !isVendorPage && (
+        {isAssignable && !isInTender && !isVendorPage && (
           <button
             className="action-button tender-button"
             onClick={() => onSendToTender(order._id)}
@@ -154,6 +172,50 @@ const OrderCard = ({
           >
             {t('send_to_tender')}
           </button>
+        )}
+        {isInTender && businessType !== 'vendor' && !isVendorPage && (
+          <>
+            <button
+              className="action-button view-tender-button"
+              onClick={() => onViewTenderStatus(order._id, order)}
+              title={t('view_tender_tooltip')}
+            >
+              {t('view_tender')}
+            </button>
+            <button
+              className="action-button cancel-tender-button"
+              onClick={() => onCancelTender(order._id)}
+              title={hasSelectedWinner ? t('cannot_cancel_after_selection') : t('cancel_tender_tooltip')}
+              disabled={hasSelectedWinner}
+            >
+              {t('cancel_tender')}
+            </button>
+          </>
+        )}
+        {businessType === 'vendor' && isInTender && (
+          <div className="tender-response-buttons">
+            <button
+              className={`action-button approve-tender-button ${hasApproved ? 'active' : ''}`}
+              onClick={() => onApproveTender(order._id)}
+              title={hasApproved ? t('approved_tender_active') : t('approve_tender_tooltip')}
+              aria-pressed={hasApproved}
+            >
+              {hasApproved ? `✓ ${t('approved')}` : t('approve_tender')}
+            </button>
+            <button
+              className={`action-button disapprove-tender-button ${hasDeclined ? 'active' : ''}`}
+              onClick={() => onDisapproveTender(order._id)}
+              title={hasDeclined ? t('declined_tender_active') : t('decline_tender_tooltip')}
+              aria-pressed={hasDeclined}
+            >
+              {hasDeclined ? `✕ ${t('declined')}` : t('disapprove_tender')}
+            </button>
+          </div>
+        )}
+        {businessType === 'vendor' && !isInTender && (
+          <div className="tender-status">
+            {t('not_in_tender')}
+          </div>
         )}
       </div>
     </div>

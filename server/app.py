@@ -52,6 +52,22 @@ app.register_blueprint(auth.bp)
 app.register_blueprint(connections.bp)
 app.register_blueprint(delivery_group.bp)
 
+# Log all registered routes for diagnostic purposes
+@app.before_first_request
+def log_routes():
+    """Log all registered routes at startup"""
+    routes = []
+    for rule in app.url_map.iter_rules():
+        methods = ','.join(sorted(rule.methods))
+        routes.append(f"{rule} ({methods})")
+    
+    # Sort for readability and log them
+    routes.sort()
+    print("=== REGISTERED ROUTES ===")
+    for route in routes:
+        print(f"  {route}")
+    print("========================")
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):

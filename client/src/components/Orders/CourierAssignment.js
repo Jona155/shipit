@@ -16,10 +16,6 @@ const CourierAssignment = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [availableCouriers, setAvailableCouriers] = useState([]);
   const [selectedCourier, setSelectedCourier] = useState('');
-  // We keep the vendor connections logic for third-party assignments
-  const [vendorConnections, setVendorConnections] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState('');
-  const [courierType, setCourierType] = useState('inhouse');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -28,18 +24,9 @@ const CourierAssignment = ({
     if (isOpen) {
       setSearchTerm('');
       setSelectedCourier('');
-      setSelectedVendor('');
-      setCourierType('inhouse'); // default tab
       fetchAvailableCouriers();
     }
   }, [isOpen, businessId]);
-
-  // Fetch vendor connections if the user chooses third-party tab
-  useEffect(() => {
-    if (courierType === 'thirdparty') {
-      fetchVendorConnections();
-    }
-  }, [courierType]);
 
   const fetchAvailableCouriers = async () => {
     setIsLoading(true);
@@ -74,21 +61,6 @@ const CourierAssignment = ({
     }
   };
 
-  const fetchVendorConnections = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/connections/business/${businessId}`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch vendor connections');
-      }
-      const data = await response.json();
-      setVendorConnections(data);
-    } catch (err) {
-      console.error(err.message);
-    }
-  };
-
   if (!isOpen) return null;
 
   const filteredCouriers = availableCouriers.filter(courier =>
@@ -96,7 +68,7 @@ const CourierAssignment = ({
   );
 
   const handleAssign = async () => {
-    if (courierType === 'inhouse' && !selectedCourier) {
+    if (!selectedCourier) {
       showAlertMessage(t('select_courier'), 'error');
       return;
     }
@@ -124,19 +96,12 @@ const CourierAssignment = ({
         body: JSON.stringify(payload),
       });
 
-      const responseText = await response.text();
-      
       if (!response.ok) {
-        let errorData;
-        try {
-          errorData = JSON.parse(responseText);
-        } catch (e) {
-          errorData = { error: responseText };
-        }
-        throw new Error(`Failed to assign orders: ${errorData.error || response.statusText}`);
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(`Failed to assign orders: ${errorData.error}`);
       }
 
-      const data = JSON.parse(responseText);
+      const data = await response.json();
       // Pass the updated_orders from the response to maintain compatibility with parent component
       onAssignCourier(data.updated_orders);
       onClose();
@@ -154,69 +119,33 @@ const CourierAssignment = ({
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
-          <div className="courier-tab-selector">
-            <button
-              className={`tab-button ${courierType === 'inhouse' ? 'active' : ''}`}
-              onClick={() => setCourierType('inhouse')}
-            >
-              {t('courier')}
-            </button>
-            <button
-              className={`tab-button ${courierType === 'thirdparty' ? 'active' : ''}`}
-              onClick={() => setCourierType('thirdparty')}
-            >
-              {t('dispatcher')}
-            </button>
-          </div>
-
-          {courierType === 'inhouse' ? (
-            isLoading ? (
-              <Loading size="small" />
-            ) : error ? (
-              <p className="error-text">{t('error')}: {error}</p>
-            ) : availableCouriers.length === 0 ? (
-              <p className="info-text">{t('no_available_couriers')}</p>
-            ) : (
-              <div className="inhouse-form">
-                <input
-                  type="text"
-                  className="input-field courier-search"
-                  placeholder={t('search_users')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <select
-                  value={selectedCourier}
-                  onChange={(e) => setSelectedCourier(e.target.value)}
-                  className="input-field courier-dropdown"
-                >
-                  <option value="">{t('select_courier')}</option>
-                  {filteredCouriers.map(courier => (
-                    <option key={courier._id} value={courier._id}>
-                      {courier.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )
+          {isLoading ? (
+            <Loading size="small" />
+          ) : error ? (
+            <p className="error-text">{t('error')}: {error}</p>
+          ) : availableCouriers.length === 0 ? (
+            <p className="info-text">{t('no_available_couriers')}</p>
           ) : (
-            <div className="thirdparty-form">
-              {vendorConnections.length === 0 ? (
-                <p className="info-text">{t('no_vendor_connections')}</p>
-              ) : (
-                <select
-                  value={selectedVendor}
-                  onChange={(e) => setSelectedVendor(e.target.value)}
-                  className="input-field courier-dropdown"
-                >
-                  <option value="">{t('select_courier')}</option>
-                  {vendorConnections.map(conn => (
-                    <option key={conn._id} value={conn.vendor_id}>
-                      {conn.vendor_name}
-                    </option>
-                  ))}
-                </select>
-              )}
+            <div className="inhouse-form">
+              <input
+                type="text"
+                className="input-field courier-search"
+                placeholder={t('search_users')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <select
+                value={selectedCourier}
+                onChange={(e) => setSelectedCourier(e.target.value)}
+                className="input-field courier-dropdown"
+              >
+                <option value="">{t('select_courier')}</option>
+                {filteredCouriers.map(courier => (
+                  <option key={courier._id} value={courier._id}>
+                    {courier.name}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
         </div>
@@ -225,10 +154,7 @@ const CourierAssignment = ({
           <button
             onClick={handleAssign}
             className="primary-button"
-            disabled={
-              selectedOrders.length === 0 ||
-              (courierType === 'inhouse' ? !selectedCourier : !selectedVendor)
-            }
+            disabled={selectedOrders.length === 0 || !selectedCourier}
           >
             {t('assign')} ({selectedOrders.length})
           </button>

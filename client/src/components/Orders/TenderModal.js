@@ -1,119 +1,141 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import './CourierAssignment.css'; // Reuse existing modal styles
+import './TenderModal.css';
 
 const TenderModal = ({ isOpen, onClose, orderId, businessId, onSendTender }) => {
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'he';
-  
+  const { t } = useTranslation();
   const [vendors, setVendors] = useState([]);
   const [selectedVendors, setSelectedVendors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Fetch connected vendors when the modal opens
+  // Fetch available vendors when the modal opens
   useEffect(() => {
-    if (isOpen) {
-      fetchVendors();
-    }
+    if (!isOpen || !businessId) return;
+
+    const fetchVendors = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+        const token = localStorage.getItem('authToken');
+        
+        console.log("Fetching vendors from:", `${apiBaseUrl}/api/businesses/vendors?business_id=${businessId}`);
+        console.log("Auth token present:", !!token);
+        
+        const response = await fetch(
+          `${apiBaseUrl}/api/businesses/vendors?business_id=${businessId}`,
+          {
+            headers: { 
+              'Content-Type': 'application/json',
+              'authToken': token 
+            }
+          }
+        );
+
+        console.log("Vendors API response status:", response.status, response.statusText);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Vendor API error details:", {
+            status: response.status,
+            statusText: response.statusText,
+            text: errorText
+          });
+          throw new Error('Failed to fetch vendors');
+        }
+
+        const data = await response.json();
+        console.log("Vendors fetched successfully:", data);
+        
+        setVendors(data);
+        
+        // Pre-select all vendors by default
+        setSelectedVendors(data.map(vendor => vendor._id));
+      } catch (err) {
+        console.error('Error fetching vendors:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendors();
   }, [isOpen, businessId]);
 
-  const fetchVendors = async () => {
-    try {
-      setLoading(true);
-      // Clean up the API URL to ensure it's correct
-      let apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001';
-      // Remove any trailing special characters
-      apiBaseUrl = apiBaseUrl.replace(/[%\s]+$/, '');
-      
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${apiBaseUrl}/api/connections/business/${businessId}`, {
-        headers: { 'authToken': token }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error fetching vendors: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      setVendors(data);
-      
-      // Pre-select all vendors by default
-      const vendorIds = data.map(vendor => vendor.vendor_id);
-      setSelectedVendors(vendorIds);
-      
-    } catch (err) {
-      console.error('Error fetching vendors:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  // Handle checkbox change
+  const handleVendorSelection = (vendorId) => {
+    setSelectedVendors(prev => 
+      prev.includes(vendorId)
+        ? prev.filter(id => id !== vendorId)
+        : [...prev, vendorId]
+    );
   };
 
-  const handleVendorToggle = (vendorId) => {
-    setSelectedVendors(prev => {
-      if (prev.includes(vendorId)) {
-        return prev.filter(id => id !== vendorId);
-      } else {
-        return [...prev, vendorId];
-      }
-    });
-  };
-
-  const handleSubmit = () => {
+  // Handle submit - send order to selected vendors
+  const handleSubmit = async () => {
     if (selectedVendors.length === 0) return;
     
-    onSendTender(orderId, selectedVendors);
-    onClose();
+    setSubmitting(true);
+    try {
+      await onSendTender(orderId, selectedVendors);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay modern-modal">
-      <div className="modal-container">
+    <div className="modal-overlay">
+      <div className="modal-content">
         <div className="modal-header">
           <h2>{t('send_to_tender')}</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="close-button" onClick={onClose}>×</button>
         </div>
-        
+
         <div className="modal-body">
+          <p>{t('select_vendors_for_tender')}</p>
+          
           {loading ? (
-            <div className="loading-text">{t('loading_vendors')}</div>
+            <div className="loading-spinner">{t('loading_vendors')}</div>
           ) : error ? (
-            <div className="error-text">{error}</div>
+            <div className="error-message">{error}</div>
           ) : vendors.length === 0 ? (
-            <div className="info-text">{t('no_connected_vendors')}</div>
+            <p>{t('no_connected_vendors')}</p>
           ) : (
-            <>
-              <p className="info-text">{t('select_vendors_for_tender')}</p>
-              <div className="vendors-list">
-                {vendors.map(vendor => (
-                  <div key={vendor.vendor_id} className="vendor-item">
-                    <label className="checkbox-container">
-                      <input
-                        type="checkbox"
-                        checked={selectedVendors.includes(vendor.vendor_id)}
-                        onChange={() => handleVendorToggle(vendor.vendor_id)}
-                      />
-                      <span>{vendor.vendor_name || vendor.vendor_id}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </>
+            <div className="vendors-list">
+              {vendors.map(vendor => (
+                <div key={vendor._id} className="vendor-checkbox">
+                  <input
+                    type="checkbox"
+                    id={`vendor-${vendor._id}`}
+                    checked={selectedVendors.includes(vendor._id)}
+                    onChange={() => handleVendorSelection(vendor._id)}
+                  />
+                  <label htmlFor={`vendor-${vendor._id}`}>
+                    {vendor.name}
+                  </label>
+                </div>
+              ))}
+            </div>
           )}
         </div>
-        
+
         <div className="modal-footer">
           <button
+            disabled={selectedVendors.length === 0 || submitting}
+            className="confirm-button"
             onClick={handleSubmit}
-            className="primary-button"
-            disabled={selectedVendors.length === 0 || loading}
           >
-            {t('send_tender')}
+            {submitting ? t('sending') : t('send_to_tender')}
           </button>
-          <button onClick={onClose} className="secondary-button">
+          <button className="cancel-button" onClick={onClose}>
             {t('cancel')}
           </button>
         </div>
