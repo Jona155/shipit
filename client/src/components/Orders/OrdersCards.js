@@ -1,9 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import OrderCard from './OrderCard';
-import VendorOrderCard from './VendorOrderCard';
+// import OrderCard from './OrderCard'; // Keep for now, remove when fully transitioned
+// import VendorOrderCard from './VendorOrderCard'; // Keep for now
 import DeliveryGroupsView from './DeliveryGroupsView';
-import './OrdersCard.css';
+import OrderRow from './OrderRow'; // Import the new OrderRow component
+import './OrdersCard.css'; // Styles for header/tabs/etc.
+import './OrdersList.css'; // Styles for the new list view
 import { getOrderStatus } from "./orderUtils";
 
 const OrdersCards = ({ 
@@ -21,25 +23,22 @@ const OrdersCards = ({
   searchTerm,
   setSearchTerm,
   onAddOrder,
-  isMapView,
-  isSelectingForRoute,
+  isMapView, // Keep for header button logic
+  isSelectingForRoute, // Keep for header button logic
   onBuildRoute,
   onCancelBuildRoute,
   isRTL,
-  onOpenAssignModal,
-  onSendToTender,
+  onOpenAssignModal, // Pass this down if OrderRow needs it
+  onSendToTender, // Pass this down
   onCancelTender,
   businessId,
   businessType,
   onApproveTender,
   onDisapproveTender,
-  businessSLA,
+  businessSLA, // Pass this down if needed for late status
   onViewTenderStatus
 }) => {
   const { t } = useTranslation();
-
-  // Determine if we are on a vendor page (if the first order includes a 'sent_from' field)
-  const isVendorPage = orders.length > 0 && Boolean(orders[0].sent_from);
 
   // Add logging to see what values we have
   console.log('OrdersCards component values:', {
@@ -50,30 +49,14 @@ const OrdersCards = ({
     ordersLength: orders.length
   });
 
-  // Group orders for accepted and finished tabs, but not for on_their_way
-  const groupedOrders = orders.reduce((acc, order) => {
-    const status = getOrderStatus(order);
-    
-    if (status === 'on_their_way' && activeTab === 'on_their_way') {
-      // For on_their_way tab, we're using DeliveryGroupsView, so we don't need to group these
-      if (!acc['__skip__']) acc['__skip__'] = [];
-      acc['__skip__'].push(order);
-    } else if (status === 'on_their_way') {
-      // For orders with on_their_way status but in different tab (like search results)
-      const courier = order.courier_name || order.courier_id || t('orders_unassigned');
-      if (!acc[courier]) acc[courier] = [];
-      acc[courier].push(order);
-    } else {
-      const groupName = status === 'finished' ? t('finished') : t('accepted');
-      if (!acc[groupName]) acc[groupName] = [];
-      acc[groupName].push(order);
-    }
-    return acc;
-  }, {});
+  // NOTE: Grouping logic might not be needed or might change for the list view
+  // For now, we'll just map directly over the orders for the list view.
 
   return (
-    <div className={`orders-card-container ${isRTL ? 'rtl' : 'ltr'}`}>
-      <div className="orders-card-header">
+    // Container class might need adjustment later
+    <div className={`orders-list-container ${isRTL ? 'rtl' : 'ltr'}`}> 
+      {/* Header remains similar for now */}
+      <div className="orders-card-header"> 
         <input
           type="text"
           className={`search-input ${isRTL ? 'rtl' : 'ltr'}`}
@@ -99,7 +82,6 @@ const OrdersCards = ({
             );
           })}
         </div>
-        {/* New container for action buttons */}
         <div className="header-action-buttons">
           {activeTab === 'accepted' && (
             <button 
@@ -109,6 +91,7 @@ const OrdersCards = ({
               {t('add_order')}
             </button>
           )}
+          {/* Keep map view buttons if map view is still planned */}
           {isMapView && (
             <button
               className={`build-route-button header-button ${isSelectingForRoute ? 'cancel' : ''} ${isRTL ? 'rtl' : 'ltr'}`}
@@ -120,11 +103,11 @@ const OrdersCards = ({
         </div>
       </div>
 
-      {/* For on_their_way tab, use the DeliveryGroupsView instead of cards */}
+      {/* Conditional Rendering: Delivery Groups or Orders List */}
       {activeTab === 'on_their_way' ? (
         <DeliveryGroupsView
           businessId={businessId}
-          orders={orders}
+          orders={orders} // Pass all orders for context within DeliveryGroupCard
           onFinishDeliveryGroup={onFinishDeliveryGroup}
           onAbortDeliveryGroup={onAbortDeliveryGroup}
           searchTerm={searchTerm}
@@ -132,57 +115,38 @@ const OrdersCards = ({
           businessType={businessType}
         />
       ) : (
-        <div className="cards-grid">
-          {Object.entries(groupedOrders).map(([group, groupOrders]) => {
-            // Skip the internal __skip__ group used for on_their_way orders
-            if (group === '__skip__') return null;
-            
-            return (
-              <React.Fragment key={group}>
-                {/* Only show group header if not in accepted tab */}
-                {activeTab !== 'accepted' && (
-                  <div className="group-header">
-                    <div className="group-name">{group === 'all' ? '' : group}</div>
-                  </div>
-                )}
-                {groupOrders.map(order => (
-                  businessType === 'vendor' ? (
-                    <VendorOrderCard
-                      key={order._id}
-                      order={order}
-                      onApproveTender={onApproveTender}
-                      onDisapproveTender={onDisapproveTender}
-                      businessSLA={businessSLA}
-                      isRTL={isRTL}
-                      businessId={businessId}
-                      isSelected={selectedOrders.includes(order._id)}
-                      onSelectOrder={onSelectOrder}
-                    />
-                  ) : (
-                    <OrderCard
-                      key={order._id}
-                      order={order}
-                      activeTab={activeTab}
-                      isSelected={selectedOrders.includes(order._id)}
-                      onSelectOrder={onSelectOrder}
-                      onFinishOrder={onFinishOrder}
-                      onUnassignOrder={onUnassignOrder}
-                      onReturnToOnTheirWay={onReturnToOnTheirWay}
-                      onSendToTender={onSendToTender}
-                      onViewTenderStatus={onViewTenderStatus}
-                      onCancelTender={onCancelTender}
-                      isRTL={isRTL}
-                      businessSLA={businessSLA}
-                    />
-                  )
-                ))}
-              </React.Fragment>
-            );
-          })}
+        // Render the new OrderRow component for other tabs
+        <div className="orders-list">
+          {/* TODO: Implement pagination or virtual scrolling for performance with >50 orders */}
+          {orders.map(order => (
+            <OrderRow
+              key={order._id}
+              order={order}
+              isRTL={isRTL}
+              // Pass necessary props down
+              isSelected={selectedOrders.includes(order._id)}
+              onSelectOrder={onSelectOrder} 
+              businessType={businessType}
+              activeTab={activeTab}
+              // Add other handlers as needed by OrderRow actions
+              onSendToTender={onSendToTender}
+              onViewTenderStatus={onViewTenderStatus}
+              onCancelTender={onCancelTender}
+              onApproveTender={onApproveTender}
+              onDisapproveTender={onDisapproveTender}
+              onFinishOrder={onFinishOrder}
+              onUnassignOrder={onUnassignOrder}
+              onReturnToOnTheirWay={onReturnToOnTheirWay}
+              businessSLA={businessSLA}
+            />
+          ))}
+          {orders.length === 0 && (
+             <div className="no-orders-message">{t('no_orders_found')}</div> // Add a message for no orders
+          )}
         </div>
       )}
 
-      {/* Assign Courier Button - Show on accepted tab for BOTH business types when not in map view */}
+      {/* Keep Assign Courier Button logic for now */}
       {activeTab === 'accepted' && !isMapView && (
         <div className="assign-courier-fixed-container">
           <button 

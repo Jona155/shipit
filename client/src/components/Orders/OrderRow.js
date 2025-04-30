@@ -1,70 +1,169 @@
 // OrderRow.js
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Phone, MapPin, Clock, AlertTriangle, UserCircle } from 'lucide-react'; 
+import OrderStatusChip from './OrderStatusChip'; // Import new component
+import OrderActionMenu from './OrderActionMenu'; // Import new component
+import { getStatusBarClass } from '../../utils/designTokens'; // Import helper
+import './OrdersList.css'; 
 import { getOrderStatus } from "./orderUtils";
+
+// Navigation URL function (keep here or move to utils)
+const navUrlFor = (addr) => {
+  if (!addr || typeof addr !== 'string') return '#'; 
+  const encoded = encodeURIComponent(addr);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  return isMobile
+    ? `https://waze.com/ul?q=${encoded}&navigate=yes`
+    : `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+};
+
+// Initials helper (keep here or move to utils)
+const getInitials = (name) => {
+  if (!name) return '?';
+  const parts = name.split(' ');
+  if (parts.length === 1) return name.substring(0, 1).toUpperCase();
+  return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
+};
 
 const OrderRow = ({ 
   order, 
   activeTab, 
   isSelected, 
   onSelectOrder, 
-  onFinishOrder, 
-  onUnassignOrder, 
-  onReturnToOnTheirWay,
-  isVendorPage,
-  isRTL
+  // Pass all action handlers down to OrderActionMenu
+  onSendToTender,
+  onViewTenderStatus, 
+  onCancelTender,     
+  onApproveTender,    
+  onDisapproveTender, 
+  onFinishOrder,      
+  onUnassignOrder,    
+  onReturnToOnTheirWay, 
+  // Other props
+  isRTL,
+  businessType,
+  businessSLA        
 }) => {
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
 
+  // --- Data Extraction (remains the same) ---
+  const orderId = order.short_id || order._id;
+  const customerName = order.customer_name || 'N/A';
+  const addressString = typeof order.address === 'string' ? order.address : 'N/A'; 
+  const phoneNumber = order.customer_phone_number || order.phone || order.customer_phone;
+  const orderTimestamp = order.status?.[0]?.timestamp || order.creation_time || order.created_at;
+  const courierName = order.courier_name;
+  const isInTender = order.in_tender === true;
+  
+  // --- Lateness Calculation (remains the same) ---
+  let isLate = false;
+  if (orderStatus === 'accepted' && businessSLA && orderTimestamp) {
+    const orderDate = new Date(orderTimestamp);
+    const slaMillis = businessSLA * 60 * 1000;
+    const deadline = new Date(orderDate.getTime() + slaMillis);
+    isLate = new Date() > deadline;
+  }
+  
+  // --- Other State Checks (remains the same) ---
+  const showCheckbox = activeTab === 'accepted' && businessType !== 'vendor' && !isInTender;
+  const statusBarClass = getStatusBarClass(orderStatus, isLate);
+
+  // Consolidate action handlers into a single object for cleaner passing
+  const actionHandlers = {
+      onSendToTender,
+      onViewTenderStatus, 
+      onCancelTender,     
+      onApproveTender,    
+      onDisapproveTender, 
+      onFinishOrder,      
+      onUnassignOrder,    
+      onReturnToOnTheirWay
+  };
+
   return (
-    <tr>
-      {activeTab === 'accepted' && (
-        <td className={isRTL ? 'rtl' : 'ltr'}>
+    <div 
+      className={`order-row ${isRTL ? 'rtl' : 'ltr'} ${isLate ? 'late' : ''}`}
+      tabIndex={0} 
+      aria-labelledby={`order-id-${orderId}`}
+    >
+       {/* Vertical Status Bar */}
+      <div className={`status-bar ${statusBarClass}`}></div>
+
+      {/* Column 1: Status Chip + Order Number + Selection */}
+      <div className="order-col col-status">
+        {showCheckbox && (
           <input
             type="checkbox"
+            className="order-row-checkbox"
             checked={isSelected}
             onChange={() => onSelectOrder(order._id)}
+            aria-label={`Select order ${orderId}`}
           />
-        </td>
-      )}
-      <td className={isRTL ? 'rtl' : 'ltr'}>{order.short_id || order._id}</td>
-      <td className={isRTL ? 'rtl' : 'ltr'}>{order.customer_name}</td>
-      <td className={isRTL ? 'rtl' : 'ltr'}>{order.address}</td>
-      <td className={isRTL ? 'rtl' : 'ltr'}>{order.comments_for_order}</td>
-      <td className={isRTL ? 'rtl' : 'ltr'}>{t(orderStatus)}</td>
-      {(activeTab === 'on_their_way' || activeTab === 'finished') && (
-        <td className={isRTL ? 'rtl' : 'ltr'}>
-          {order.courier_name || order.courier_id || t('orders_unassigned')}
-        </td>
-      )}
-      <td className={isRTL ? 'rtl' : 'ltr'}>
-        {activeTab === 'on_their_way' && (
-          <>
-            <button
-              className={`finish-order-button ${isRTL ? 'rtl' : 'ltr'}`}
-              onClick={() => onFinishOrder(order._id)}
-            >
-              {t('orders_finish')}
-            </button>
-            <button
-              className={`unassign-order-button ${isRTL ? 'rtl' : 'ltr'}`}
-              onClick={() => onUnassignOrder(order._id)}
-            >
-              {t('orders_unassign')}
-            </button>
-          </>
         )}
-        {activeTab === 'finished' && (
-          <button
-            className={`return-to-route-button ${isRTL ? 'rtl' : 'ltr'}`}
-            onClick={() => onReturnToOnTheirWay(order._id)}
-          >
-            {t('orders_return')}
-          </button>
+        {/* Use OrderStatusChip component */} 
+        <OrderStatusChip status={orderStatus} /> 
+        {/* Conditionally show In Tender chip */}
+        {isInTender && businessType !== 'vendor' && (
+            <OrderStatusChip status={'in_tender'} /> 
         )}
-      </td>
-    </tr>
+        <span className="order-row-id" title={orderId} id={`order-id-${orderId}`}>{orderId}</span>
+      </div>
+
+      {/* Column 2: Customer & Address (remains the same) */}
+      <div className="order-col col-customer">
+        <div className="customer-name" title={customerName}>{customerName}</div>
+        <div className="address-line">
+          <span className="address-text" title={addressString}>{addressString}</span>
+          {addressString !== 'N/A' && (
+            <a href={navUrlFor(addressString)} className="map-icon-link" target="_blank" rel="noopener noreferrer" aria-label={t('navigate_to_address')} title={t('navigate_to_address')}>
+              <MapPin className="map-icon" />
+            </a>
+          )}
+        </div>
+        {phoneNumber && (
+          <div className="order-phone-line">
+            <span title={phoneNumber}>{phoneNumber}</span> 
+            <a
+              href={`tel:${phoneNumber}`}
+              className="phone-icon-link"
+              aria-label={t('call_customer')}
+              title={t('call_customer')}
+            >
+              <Phone className="phone-icon" />
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Column 3: Timestamp / ETA + Avatar (remains the same) */}
+      <div className="order-col col-time">
+         {activeTab === 'on_their_way' && (
+           courierName ? (
+              <div className="courier-avatar" title={courierName}>{getInitials(courierName)}</div>
+           ) : (
+              <div className="courier-avatar placeholder" title={t('unassigned')}><UserCircle size={16} /></div>
+           )
+         )}
+        <Clock className="time-icon" title={t('order_time', 'Order Time')} />
+        <span className="time-text" title={orderTimestamp ? new Date(orderTimestamp).toLocaleString() : ''}>
+          {orderTimestamp ? new Date(orderTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+        </span>
+        {isLate && <AlertTriangle className="late-icon" title={t('order_is_late')} />}
+      </div>
+
+      {/* Column 4: Actions - Use OrderActionMenu component */}
+      <div className="order-col col-actions">
+        <OrderActionMenu 
+           order={order}
+           activeTab={activeTab}
+           businessType={businessType}
+           {...actionHandlers} // Spread all action handlers
+        />
+      </div>
+      
+    </div>
   );
 };
 

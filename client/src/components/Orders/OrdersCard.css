@@ -7,42 +7,64 @@
 
 .orders-card-header {
   display: flex;
-  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  height: 52px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #eee;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .search-input {
-  padding: 10px;
-  border: 1px solid #e1e1e1;
-  border-radius: 4px;
-  font-size: 16px;
-  flex-grow: 1;
-  min-width: 150px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  flex-grow: 0;
+  flex-shrink: 1;
+  width: 250px;
+  transition: width 0.3s ease-in-out;
+}
+
+.search-input:focus {
+  border-color: #3a86ff;
+  box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.2);
 }
 
 .tabs {
   display: flex;
-  border-bottom: 1px solid #e1e1e1;
-  flex-shrink: 0;
+  border-bottom: none;
+  flex-grow: 1;
+  justify-content: center;
+  height: 100%;
+  align-items: center;
 }
 
 .tab {
-  padding: 10px 20px;
-  background: none;
-  border: none;
+  padding: 0 16px;
   border-bottom: 3px solid transparent;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.3s;
+  transition: all 0.2s;
   white-space: nowrap;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  color: #666;
+}
+
+.tab:hover {
+  color: #333;
 }
 
 .tab.active {
-  border-bottom: 3px solid #3a86ff;
+  border-bottom-color: #3a86ff;
   color: #3a86ff;
+  font-weight: 600;
 }
 
 .cards-grid {
@@ -258,17 +280,34 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .cards-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .orders-card-header {
     flex-direction: column;
+    height: auto;
+    padding: 12px;
+  }
+  .search-input {
+    width: 100%;
+  }
+  .tabs {
+    width: 100%;
+    justify-content: space-around;
+    margin-top: 8px;
+    border-bottom: 1px solid #eee;
+  }
+  .tab {
+    padding: 8px 5px;
+    font-size: 14px;
+    height: auto;
+    border-bottom-width: 2px;
+  }
+  .header-action-buttons {
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
   }
   
-  .tab {
-    padding: 8px 12px;
-    font-size: 14px;
+  .cards-grid {
+    grid-template-columns: 1fr;
   }
   
   .order-card {
@@ -307,28 +346,19 @@
 
 /* Container for header action buttons */
 .header-action-buttons {
-  display: flex;       /* Arrange buttons in a row */
-  gap: 8px;          /* Space between buttons if multiple are shown */
-  margin-left: auto; /* Push container to the right (LTR default) */
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .rtl .header-action-buttons {
-  margin-left: unset; /* Remove LTR margin */
-  margin-right: auto; /* Push container to the left in RTL */
 }
 
 /* Style for buttons placed directly in the header */
 .header-button {
-  padding: 8px 16px;
-  background-color: #3a86ff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  white-space: nowrap;
-  flex-shrink: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 6px;
 }
 
 .header-button:hover {
@@ -336,11 +366,9 @@
 }
 
 .add-order-button.header-button {
-  /* Specific styles for add order if needed, inherits from .header-button */
 }
 
 .build-route-button.header-button {
-  /* Specific styles for build route, inherits from .header-button */
   background-color: #6c757d;
 }
 
@@ -393,29 +421,29 @@
 
 /* New phone link styling */
 .order-phone-line {
-  font-size: 14px; /* Or match your base body size */
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 6px; 
-  margin-top: 4px; /* Add some space above */
+  margin-top: 4px;
 }
 
 .phone-icon-link {
   text-decoration: none;
-  display: inline-flex; /* Needed for alignment */
-  align-items: center;  /* Needed for alignment */
+  display: inline-flex;
+  align-items: center; 
 }
 
 .phone-icon {
   width: 14px;
   height: 14px;
   opacity: 0.6;
-  color: #666; /* Match subtle color */
+  color: #666;
 }
 
 @media (min-width: 769px) {
   .phone-icon-link {
-    display: none; /* Hide icon link (and thus icon) on desktop */
+    display: none;
   }
 }
 
@@ -429,7 +457,7 @@
   display: flex;
   align-items: center;
   gap: 6px; 
-  font-size: 14px; /* Or match your base size */
+  font-size: 14px;
 }
 
 .map-icon-link {
@@ -442,7 +470,7 @@
   width: 14px;
   height: 14px;
   opacity: 0.6;
-  color: #666; /* Or your subtle icon color */
+  color: #666;
 }
 
 /* Optional: hide pin icon on desktop */

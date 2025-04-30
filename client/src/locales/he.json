@@ -266,5 +266,8 @@
   "source_business": "עסק מקור",
   "delivered_by_vendor": "ספק מבצע",
   "call_customer": "התקשר ללקוח",
-  "navigate_to_address": "נווט לכתובת"
+  "navigate_to_address": "נווט לכתובת",
+  "order_is_late": "הזמנה חורגת מזמן",
+  "unassigned": "לא משויך",
+  "order_time": "שעת הזמנה"
 }

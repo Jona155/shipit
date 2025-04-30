@@ -270,5 +270,8 @@
   "source_business": "Source business",
   "delivered_by_vendor": "Delivered by vendor",
   "call_customer": "Call customer",
-  "navigate_to_address": "Navigate to address"
+  "navigate_to_address": "Navigate to address",
+  "order_is_late": "Order is late",
+  "unassigned": "Unassigned",
+  "order_time": "Order Time"
 }
