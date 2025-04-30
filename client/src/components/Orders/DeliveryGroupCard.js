@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Phone } from 'lucide-react';
 import './DeliveryGroupCard.css';
 
 // Check if we're in development environment
@@ -132,37 +133,47 @@ const DeliveryGroupCard = ({
         <div className="delivery-group-orders">
           <h4>{t('orders_in_route')}:</h4>
           <div className="order-list">
-            {routeOrders.map(order => (
-              <div key={order._id} className="route-order-item">
-                {order.missing ? (
-                  <div className="missing-order">{t('missing_order_data', { id: order._id })}</div>
-                ) : (
-                  <>
-                    <div className="order-item-header">
-                      <span className="order-id">{order.short_id || order._id}</span>
-                      <span className={`order-status status-${order.latest_status?.toLowerCase()}`}>
-                        {t(order.latest_status?.toLowerCase() || 'unknown')}
-                      </span>
-                    </div>
-                    {/* Source Business - only show for vendors */}
-                    {businessType === 'vendor' && (
-                      <div className="order-item-source">
-                        {t('source_business')}: {order.source_bid || order.bid}
+            {routeOrders.map(order => {
+              const phoneNumber = order.customer_phone_number || order.phone || order.customer_phone;
+              return (
+                <div key={order._id} className="route-order-item">
+                  {order.missing ? (
+                    <div className="missing-order">{t('missing_order_data', { id: order._id })}</div>
+                  ) : (
+                    <>
+                      <div className="order-item-header">
+                        <span className="order-id">{order.short_id || order._id}</span>
+                        <span className={`order-status status-${order.latest_status?.toLowerCase()}`}>
+                          {t(order.latest_status?.toLowerCase() || 'unknown')}
+                        </span>
                       </div>
-                    )}
-                    <div className="order-item-details">
-                      <div className="order-customer">
-                        {order.customer_name}
-                        {(order.customer_phone_number || order.phone || order.customer_phone) && (
-                          <span className="order-phone"> · {order.customer_phone_number || order.phone || order.customer_phone}</span>
+                      {/* Source Business - only show for vendors */}
+                      {businessType === 'vendor' && (
+                        <div className="order-item-source">
+                          {t('source_business')}: {order.source_bid || order.bid}
+                        </div>
+                      )}
+                      <div className="order-item-details">
+                        <div className="order-customer">{order.customer_name}</div>
+                        <div className="order-address">{order.address}</div>
+                        {phoneNumber && (
+                          <div className="order-phone-line">
+                            {phoneNumber}
+                            <a
+                              href={`tel:${phoneNumber}`}
+                              className="phone-icon-link"
+                              aria-label={t('call_customer')}
+                            >
+                              <Phone className="phone-icon" />
+                            </a>
+                          </div>
                         )}
                       </div>
-                      <div className="order-address">{order.address}</div>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

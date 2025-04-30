@@ -217,10 +217,32 @@
   margin-bottom: 4px;
 }
 
-.order-phone {
-  font-size: 12px;
-  opacity: 0.7;
-  color: #666;
+/* New phone link styling - consistent with OrdersCard.css */
+.order-phone-line {
+  font-size: 14px; 
+  display: flex;
+  align-items: center;
+  gap: 6px; 
+  margin-top: 4px; 
+}
+
+.phone-icon-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;  
+}
+
+.phone-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+  color: #666; 
+}
+
+@media (min-width: 769px) {
+  .phone-icon-link {
+    display: none; 
+  }
 }
 
 .missing-order {

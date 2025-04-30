@@ -389,4 +389,32 @@
   color: #666;
   opacity: 0.7;
   margin-bottom: 4px;
+}
+
+/* New phone link styling */
+.order-phone-line {
+  font-size: 14px; /* Or match your base body size */
+  display: flex;
+  align-items: center;
+  gap: 6px; 
+  margin-top: 4px; /* Add some space above */
+}
+
+.phone-icon-link {
+  text-decoration: none;
+  display: inline-flex; /* Needed for alignment */
+  align-items: center;  /* Needed for alignment */
+}
+
+.phone-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+  color: #666; /* Match subtle color */
+}
+
+@media (min-width: 769px) {
+  .phone-icon-link {
+    display: none; /* Hide icon link (and thus icon) on desktop */
+  }
 } 

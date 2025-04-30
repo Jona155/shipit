@@ -1,5 +1,16 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Phone, MapPin } from "lucide-react";
+
+// Helper function to generate navigation URL
+const navUrlFor = (addr) => {
+  if (!addr || typeof addr !== 'string') return '#'; // Return a safe fallback
+  const encoded = encodeURIComponent(addr);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  return isMobile
+    ? `https://waze.com/ul?q=${encoded}&navigate=yes`
+    : `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+};
 
 // This component renders the common details shared between OrderCard and VendorOrderCard
 const OrderCardDetails = ({ order, isRTL, businessType }) => {
@@ -15,6 +26,10 @@ const OrderCardDetails = ({ order, isRTL, businessType }) => {
     }
     return t('address_not_available', 'Address not available'); // Add translation key if needed
   };
+
+  // Get the phone number with fallbacks
+  const phoneNumber = order.customer_phone_number || order.phone || order.customer_phone;
+  const addressString = typeof order.address === 'string' ? order.address : renderAddress(order.address);
 
   return (
     <>
@@ -34,12 +49,44 @@ const OrderCardDetails = ({ order, isRTL, businessType }) => {
         
         <div className="order-detail">
           <div className="detail-label">{t('orders_phone_number')}:</div>
-          <div className="detail-value">{order.customer_phone_number || 'N/A'}</div>
+          <div className="detail-value">
+            {phoneNumber ? (
+              <div className="order-phone-line">
+                {phoneNumber}
+                <a
+                  href={`tel:${phoneNumber}`}
+                  className="phone-icon-link"
+                  aria-label={t('call_customer')}
+                >
+                  <Phone className="phone-icon" />
+                </a>
+              </div>
+            ) : (
+              'N/A'
+            )}
+          </div>
         </div>
         
         <div className="order-detail">
           <div className="detail-label">{t('orders_address')}:</div>
-          <div className="detail-value">{renderAddress(order.address) || 'N/A'}</div>
+          <div className="detail-value">
+            {addressString ? (
+              <div className="order-address-line">
+                {addressString}
+                <a
+                  href={navUrlFor(addressString)}
+                  className="map-icon-link"
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  aria-label={t('navigate_to_address')}
+                >
+                  <MapPin className="map-icon" />
+                </a>
+              </div>
+            ) : (
+              'N/A'
+            )}
+          </div>
         </div>
         
         <div className="order-detail">

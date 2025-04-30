@@ -264,5 +264,6 @@
   "tender_open_can_act": "מכרז פתוח - באפשרותך לאשר/לדחות",
   "select_orders_to_assign_tooltip": "בחר הזמנות תחילה",
   "source_business": "עסק מקור",
-  "delivered_by_vendor": "ספק מבצע"
+  "delivered_by_vendor": "ספק מבצע",
+  "call_customer": "התקשר ללקוח"
 }

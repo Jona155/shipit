@@ -268,5 +268,6 @@
   "tender_open_can_act": "Tender open – you may approve/reject",
   "select_orders_to_assign_tooltip": "Select orders first",
   "source_business": "Source business",
-  "delivered_by_vendor": "Delivered by vendor"
+  "delivered_by_vendor": "Delivered by vendor",
+  "call_customer": "Call customer"
 }
