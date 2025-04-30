@@ -256,5 +256,13 @@
   "sending": "שולח...",
   "disapproved": "נדחה",
   "cannot_cancel_after_selection": "לא ניתן לבטל מכרז לאחר שנבחר זוכה",
-  "cannot_assign_while_in_tender": "לא ניתן לשייך לשליח כאשר ההזמנה במכרז. יש לבטל את המכרז תחילה."
+  "address_not_available": "כתובת לא זמינה",
+  "you_won_tender": "זכית במכרז",
+  "tender_closed_other_winner": "המכרז נסגר - נבחר ספק אחר",
+  "youre_selected": "נבחרת",
+  "awaiting_decision": "ממתין להחלטה",
+  "tender_open_can_act": "מכרז פתוח - באפשרותך לאשר/לדחות",
+  "select_orders_to_assign_tooltip": "בחר הזמנות תחילה",
+  "source_business": "עסק מקור",
+  "delivered_by_vendor": "ספק מבצע"
 }

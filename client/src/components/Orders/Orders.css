@@ -373,3 +373,50 @@ button {
   margin-left: 0;
   margin-right: 8px;
 }
+
+/* Styles for Vendor Card specific states */
+.tender-state-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 14px; /* More rounded */
+  font-size: 13px;
+  font-weight: 600; /* Bolder */
+  margin-left: 8px; /* Consistent spacing */
+}
+
+.tender-state-badge.tender-won {
+  background-color: #2ECC71; /* Green */
+  color: white;
+}
+
+.tender-state-badge.tender-open {
+  background-color: #3498DB; /* Blue */
+  color: white;
+}
+
+.tender-footer-message {
+  flex-grow: 1; /* Take available space */
+  text-align: left; /* Align text left */
+  color: #555;
+  font-size: 13px;
+  padding-right: 10px; /* Space before buttons */
+}
+
+/* RTL Styles */
+.rtl .tender-state-badge {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+.rtl .tender-footer-message {
+  text-align: right; /* Align text right in RTL */
+  padding-right: 0;
+  padding-left: 10px;
+}
+
+/* Ensure actions align correctly */
+.order-card-actions {
+  display: flex;
+  align-items: center; /* Vertically center items */
+  justify-content: space-between; /* Space out elements */
+}

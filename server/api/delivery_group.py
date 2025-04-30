@@ -20,7 +20,7 @@ def assign_courier_to_orders():
     }
     1) Sets user_businesses.profiles.messenger.isWhileMission to true
     2) Updates each order's status array so that "ASSIGNED" is at index 0 and updates the courier_name field.
-    3) Creates a new document in the delivery_groups collection.
+    3) Creates a new document in the delivery_groups collection, including source_bid list.
     """
     try:
         db = get_db()
@@ -31,11 +31,33 @@ def assign_courier_to_orders():
         data = request.json
         courier_uid = data.get('courier_uid')
         order_ids = data.get('order_ids', [])
+        assigning_business_id = data.get('businessId') # Get the BID of the business performing the assignment
 
-        if not courier_uid or not order_ids:
-            return jsonify({"error": "Missing courier_uid or order_ids"}), 400
+        logging.info(f"Assign courier request: courier={courier_uid}, orders={order_ids}, assigning_bid={assigning_business_id}")
 
-        # 1) Update the courier's status - set isWhileMission to true and isCurrentlyAvailable to false
+        if not courier_uid or not order_ids or not assigning_business_id:
+            return jsonify({"error": "Missing courier_uid, order_ids, or businessId"}), 400
+
+        # --- Get Source BIDs --- 
+        assigned_orders = orders_dal.get_orders_by_ids(order_ids)
+        if not assigned_orders:
+            logging.error(f"Could not find any orders for IDs: {order_ids}")
+            return jsonify({"error": "Assigned orders not found"}), 404
+            
+        source_bids_set = set()
+        for order in assigned_orders:
+            # Prioritize source_bid if it exists (for vendor orders), otherwise use the order's bid
+            source_bid = order.get('source_bid', order.get('bid')) 
+            if source_bid:
+                source_bids_set.add(source_bid)
+            else:
+                logging.warning(f"Order {order.get('_id')} missing both source_bid and bid field.")
+                
+        source_bids_list = list(source_bids_set)
+        logging.info(f"Extracted source BIDs for delivery group: {source_bids_list}")
+        # --- End Get Source BIDs ---
+
+        # 1) Update the courier's status 
         db.user_businesses.update_one(
             {"uid": courier_uid},
             {"$set": {
@@ -45,32 +67,26 @@ def assign_courier_to_orders():
             }}
         )
 
-        # Retrieve the courier's name from the users collection
+        # Retrieve the courier's name
         courier_user = db.users.find_one({"_id": courier_uid})
         courier_name = courier_user.get('name') if courier_user else None
 
-        # 2) Update each selected order: set status to "ASSIGNED" and update courier_name.
+        # 2) Update each selected order status
         new_status = "ASSIGNED"
         updated_orders = orders_dal.update_orders_status(
             order_ids=order_ids,
             new_status=new_status,
             courier_id=courier_uid,
-            courier_name=courier_name,  # now passing the retrieved courier name
+            courier_name=courier_name,
         )
 
-        # Retrieve business id from the user_businesses document:
-        user_business = db.user_businesses.find_one({"uid": courier_uid})
-        if not user_business:
-            return jsonify({"error": "No user_businesses entry found for courier"}), 404
-
-        bid = user_business.get('bid', '')
-
-        # 3) Create a new Delivery Group, passing the courier_name.
+        # 3) Create a new Delivery Group, passing the source_bids list
         delivery_group_doc = delivery_group_dal.create_delivery_group(
-            bid=bid,
+            bid=assigning_business_id, # The BID of the business assigning the courier
             courier_uid=courier_uid,
             courier_name=courier_name,
-            order_ids=order_ids
+            order_ids=order_ids,
+            source_bids=source_bids_list # Pass the extracted source BIDs
         )
 
         return jsonify({
@@ -81,6 +97,8 @@ def assign_courier_to_orders():
 
     except Exception as e:
         logging.error(f"Error in assign_courier_to_orders: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc()) # Log full traceback
         return jsonify({"error": str(e)}), 500
 
 
@@ -174,20 +192,33 @@ def abort_delivery_group():
 
     Expects JSON:
     {
-       "delivery_group_id": "<delivery_group_id>"
+       "delivery_group_id": "<delivery_group_id>",
+       "business_id": "<business_id>" 
     }
+    
+    Security: Only the business that owns the delivery group (matching bid) can abort it
     """
     try:
         db = get_db()
         data = request.json
         dg_id = data.get("delivery_group_id")
+        business_id = data.get("business_id")
+        
         if not dg_id:
             return jsonify({"error": "Missing delivery_group_id"}), 400
+            
+        if not business_id:
+            return jsonify({"error": "Missing business_id"}), 400
 
         # Retrieve the delivery group document to get order IDs and courier ID
         dg = db.delivery_groups.find_one({"_id": dg_id})
         if not dg:
             return jsonify({"error": "Delivery group not found"}), 404
+            
+        # Security check: Verify that the requesting business owns this delivery group
+        if dg.get("bid") != business_id:
+            logging.warning(f"Security: Unauthorized abort attempt for delivery group {dg_id} by business {business_id}")
+            return jsonify({"error": "You can only abort delivery groups that belong to your business"}), 403
 
         # Update the delivery group status to ABORTED
         result = db.delivery_groups.update_one({"_id": dg_id}, {"$set": {"status": "ABORTED"}})

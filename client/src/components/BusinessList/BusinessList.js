@@ -41,10 +41,12 @@ const BusinessList = () => {
         }
 
         const data = await response.json();
+        console.log("Raw businesses data from API:", data);
         
         if (Array.isArray(data)) {
           setBusinesses(data);
         } else {
+          console.error("API did not return an array for businesses:", data);
           setBusinesses([]);
           setError("Received invalid data format from server.");
         }
@@ -70,6 +72,8 @@ const BusinessList = () => {
     return business.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
   
+  console.log("Filtered businesses before render:", filteredBusinesses);
+
   const handleBusinessClick = (business) => {
     // Save business_type and sla to localStorage
     localStorage.setItem('currentBusinessType', business.business_type || ''); // Store empty string if undefined

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import OrderCard from './OrderCard';
+import VendorOrderCard from './VendorOrderCard';
 import DeliveryGroupsView from './DeliveryGroupsView';
 import './OrdersCard.css';
 import { getOrderStatus } from "./orderUtils";
@@ -39,6 +40,15 @@ const OrdersCards = ({
 
   // Determine if we are on a vendor page (if the first order includes a 'sent_from' field)
   const isVendorPage = orders.length > 0 && Boolean(orders[0].sent_from);
+
+  // Add logging to see what values we have
+  console.log('OrdersCards component values:', {
+    businessId,
+    businessType,
+    activeTab,
+    isDeliveryGroupsView: activeTab === 'on_their_way',
+    ordersLength: orders.length
+  });
 
   // Group orders for accepted and finished tabs, but not for on_their_way
   const groupedOrders = orders.reduce((acc, order) => {
@@ -119,6 +129,7 @@ const OrdersCards = ({
           onAbortDeliveryGroup={onAbortDeliveryGroup}
           searchTerm={searchTerm}
           isRTL={isRTL}
+          businessType={businessType}
         />
       ) : (
         <div className="cards-grid">
@@ -135,25 +146,35 @@ const OrdersCards = ({
                   </div>
                 )}
                 {groupOrders.map(order => (
-                  <OrderCard
-                    key={order._id}
-                    order={order}
-                    activeTab={activeTab}
-                    isSelected={selectedOrders.includes(order._id)}
-                    onSelectOrder={onSelectOrder}
-                    onFinishOrder={onFinishOrder}
-                    onUnassignOrder={onUnassignOrder}
-                    onReturnToOnTheirWay={onReturnToOnTheirWay}
-                    onSendToTender={onSendToTender}
-                    onViewTenderStatus={onViewTenderStatus}
-                    onCancelTender={onCancelTender}
-                    onApproveTender={onApproveTender}
-                    onDisapproveTender={onDisapproveTender}
-                    isVendorPage={isVendorPage}
-                    businessType={businessType}
-                    isRTL={isRTL}
-                    businessSLA={businessSLA}
-                  />
+                  businessType === 'vendor' ? (
+                    <VendorOrderCard
+                      key={order._id}
+                      order={order}
+                      onApproveTender={onApproveTender}
+                      onDisapproveTender={onDisapproveTender}
+                      businessSLA={businessSLA}
+                      isRTL={isRTL}
+                      businessId={businessId}
+                      isSelected={selectedOrders.includes(order._id)}
+                      onSelectOrder={onSelectOrder}
+                    />
+                  ) : (
+                    <OrderCard
+                      key={order._id}
+                      order={order}
+                      activeTab={activeTab}
+                      isSelected={selectedOrders.includes(order._id)}
+                      onSelectOrder={onSelectOrder}
+                      onFinishOrder={onFinishOrder}
+                      onUnassignOrder={onUnassignOrder}
+                      onReturnToOnTheirWay={onReturnToOnTheirWay}
+                      onSendToTender={onSendToTender}
+                      onViewTenderStatus={onViewTenderStatus}
+                      onCancelTender={onCancelTender}
+                      isRTL={isRTL}
+                      businessSLA={businessSLA}
+                    />
+                  )
                 ))}
               </React.Fragment>
             );
@@ -161,12 +182,14 @@ const OrdersCards = ({
         </div>
       )}
 
-      {/* Assign Courier Button - only shown on the accepted tab and not in map view */}
+      {/* Assign Courier Button - Show on accepted tab for BOTH business types when not in map view */}
       {activeTab === 'accepted' && !isMapView && (
         <div className="assign-courier-fixed-container">
           <button 
             className="assign-courier-button" 
-            onClick={onOpenAssignModal}
+            onClick={onOpenAssignModal} 
+            disabled={selectedOrders.length === 0}
+            title={selectedOrders.length === 0 ? t('select_orders_to_assign_tooltip', 'Select orders first') : t('assign_courier')}
           >
             {t('assign_courier')}
           </button>

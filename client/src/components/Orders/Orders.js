@@ -354,10 +354,21 @@ const Orders = () => {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ delivery_group_id: deliveryGroupId })
+          body: JSON.stringify({ 
+            delivery_group_id: deliveryGroupId,
+            business_id: businessId
+          })
         }
       );
-      if (!response.ok) throw new Error('Failed to abort delivery group');
+      
+      if (!response.ok) {
+        // Parse error response
+        const errorData = await response.json().catch(() => ({
+          error: 'Failed to abort delivery group'
+        }));
+        throw new Error(errorData.error || 'Failed to abort delivery group');
+      }
+      
       await response.json();
       showAlertMessage(t('delivery_group_aborted', 'Delivery group assignment cancelled'), 'info');
       
@@ -654,6 +665,15 @@ const Orders = () => {
   // Once the orders are loaded, incremental updates happen seamlessly.
   if (initialLoad && loading) return <Loading size="fullscreen" />;
   if (error) return <div className="error-message">{t('error')}: {error}</div>;
+
+  // Debug information for understanding the issue
+  console.log('Orders component values:', {
+    businessId,
+    businessType,
+    activeTab,
+    isUsingDeliveryGroups: activeTab === 'on_their_way',
+    orderCount: filteredOrders.length
+  });
 
   return (
     <div className={`orders-container ${isRTL ? 'rtl' : 'ltr'}`}>

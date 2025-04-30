@@ -85,7 +85,8 @@ const CourierAssignment = ({
       // Use the uid (users collection _id) instead of the user_businesses _id
       const payload = {
         courier_uid: selectedCourierObj.uid,  // Use the uid which maps to users collection _id
-        order_ids: selectedOrders
+        order_ids: selectedOrders,
+        businessId: businessId // Add the businessId to the payload
       };
       
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/delivery-group/assign`, {

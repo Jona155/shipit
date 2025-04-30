@@ -54,6 +54,47 @@
   margin-top: 2px;
 }
 
+.vendor-name-wrapper {
+  display: flex;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  background-color: #fff3e0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border-left: 4px solid #fb8c00;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.vendor-name-label {
+  font-size: 13px;
+  color: #424242;
+  margin-right: 6px;
+  font-weight: 500;
+}
+
+.vendor-name-value {
+  font-size: 13px;
+  color: #e65100;
+  font-weight: bold;
+}
+
+.rtl .vendor-name-wrapper {
+  border-left: none;
+  border-right: 4px solid #fb8c00;
+}
+
+.rtl .vendor-name-label {
+  margin-right: 0;
+  margin-left: 6px;
+}
+
+.vendor-name {
+  font-size: 12px;
+  color: #666;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
 .delivery-group-actions {
   display: flex;
   align-items: center;
@@ -249,4 +290,57 @@
 .rtl .abort-group-button {
   margin-right: 0;
   margin-left: 5px;
+}
+
+/* Debug Tools */
+.debug-button-container {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 100;
+}
+
+.rtl .debug-button-container {
+  right: auto;
+  left: 5px;
+}
+
+.debug-button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.debug-button:hover {
+  opacity: 1;
+}
+
+.debug-info {
+  position: absolute;
+  top: 25px;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 10px;
+  font-size: 11px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  min-width: 200px;
+  z-index: 101;
+  text-align: left;
+}
+
+.rtl .debug-info {
+  right: auto;
+  left: 0;
+  text-align: right;
+}
+
+.debug-info p {
+  margin: 2px 0;
+  font-family: monospace;
 } 

@@ -441,3 +441,34 @@ class OrdersDAL:
         except Exception as e:
             logging.error(f"Error updating order {order_id}: {str(e)}")
             return False
+
+    def get_orders_by_ids(self, order_ids):
+        """
+        Fetch multiple orders by their IDs.
+        
+        Args:
+            order_ids: A list of order IDs to fetch.
+            
+        Returns:
+            A list of order documents, or an empty list if none found.
+        """
+        if not order_ids:
+            return []
+            
+        orders = list(self.db.orders.find({"_id": {"$in": order_ids}}))
+        
+        # Format the orders for JSON serialization
+        formatted_orders = []
+        for order in orders:
+            order['_id'] = str(order['_id'])
+            # Format timestamps (add other fields as needed)
+            for status in order.get('status', []):
+                if 'timestamp' in status and hasattr(status['timestamp'], 'isoformat'):
+                    status['timestamp'] = status['timestamp'].isoformat()
+            if 'timestamp' in order and hasattr(order.get('timestamp'), 'isoformat'):
+                 order['timestamp'] = order['timestamp'].isoformat()
+            if 'order_time' in order and hasattr(order.get('order_time'), 'isoformat'):
+                 order['order_time'] = order['order_time'].isoformat()
+            formatted_orders.append(order)
+            
+        return formatted_orders

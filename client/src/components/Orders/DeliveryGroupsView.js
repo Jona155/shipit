@@ -11,7 +11,8 @@ const DeliveryGroupsView = ({
   onFinishDeliveryGroup,
   onAbortDeliveryGroup,
   searchTerm,
-  isRTL
+  isRTL,
+  businessType
 }) => {
   const { t } = useTranslation();
   const [deliveryGroups, setDeliveryGroups] = useState([]);
@@ -85,6 +86,8 @@ const DeliveryGroupsView = ({
               onAbortDeliveryGroup={onAbortDeliveryGroup}
               isRTL={isRTL}
               orders={orders}
+              businessType={businessType}
+              businessId={businessId}
             />
           ))}
         </div>

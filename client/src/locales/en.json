@@ -251,7 +251,7 @@
   "pending": "Pending",
   "selected_winner": "Selected Winner",
   "no_tender_responses": "No tender responses yet",
-  "all_vendors_declined": "All vendors have declined this tender",
+  "all_vendors_declined": "All vendors declined the tender",
   "return_to_assign_manually": "Return to Assign Manually",
   "vendor_must_approve": "Vendor must approve before you can select",
   "winner": "Winner",
@@ -260,5 +260,13 @@
   "sending": "Sending...",
   "disapproved": "Disapproved",
   "cannot_cancel_after_selection": "Cannot cancel tender after a winner has been selected",
-  "cannot_assign_while_in_tender": "Cannot assign to courier while order is in tender. Cancel the tender first."
+  "address_not_available": "Address not available",
+  "you_won_tender": "You Won Tender",
+  "tender_closed_other_winner": "Tender closed – another vendor was selected",
+  "youre_selected": "You're selected",
+  "awaiting_decision": "Awaiting decision",
+  "tender_open_can_act": "Tender open – you may approve/reject",
+  "select_orders_to_assign_tooltip": "Select orders first",
+  "source_business": "Source business",
+  "delivered_by_vendor": "Delivered by vendor"
 }

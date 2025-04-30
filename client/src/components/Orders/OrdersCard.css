@@ -373,4 +373,20 @@
 
 .sla-timer {
   margin-right: 8px;
+}
+
+/* Source business label for vendor view */
+.order-source {
+  font-size: 12px;
+  color: #666;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+/* Source business label for delivery group order items */
+.order-item-source {
+  font-size: 12px;
+  color: #666;
+  opacity: 0.7;
+  margin-bottom: 4px;
 } 
