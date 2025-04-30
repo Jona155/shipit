@@ -269,5 +269,6 @@
   "select_orders_to_assign_tooltip": "Select orders first",
   "source_business": "Source business",
   "delivered_by_vendor": "Delivered by vendor",
-  "call_customer": "Call customer"
+  "call_customer": "Call customer",
+  "navigate_to_address": "Navigate to address"
 }

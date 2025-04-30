@@ -417,4 +417,39 @@
   .phone-icon-link {
     display: none; /* Hide icon link (and thus icon) on desktop */
   }
-} 
+}
+
+.rtl .phone-icon-mobile {
+  margin-left: 0;
+  margin-right: 4px;
+}
+
+/* Address link styling */
+.order-address-line {
+  display: flex;
+  align-items: center;
+  gap: 6px; 
+  font-size: 14px; /* Or match your base size */
+}
+
+.map-icon-link {
+  text-decoration: none;
+  display: inline-flex; 
+  align-items: center; 
+}
+
+.map-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+  color: #666; /* Or your subtle icon color */
+}
+
+/* Optional: hide pin icon on desktop */
+/* 
+@media (min-width: 769px) {
+  .map-icon-link {
+    display: none;
+  }
+}
+*/ 

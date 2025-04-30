@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Phone } from 'lucide-react';
+import { Phone, MapPin } from 'lucide-react';
 import './DeliveryGroupCard.css';
 
 // Check if we're in development environment
 const isDev = process.env.NODE_ENV === 'development';
+
+// Helper function to generate navigation URL (copied here for now)
+const navUrlFor = (addr) => {
+  if (!addr || typeof addr !== 'string') return '#';
+  const encoded = encodeURIComponent(addr);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  return isMobile
+    ? `https://waze.com/ul?q=${encoded}&navigate=yes`
+    : `https://www.google.com/maps/search/?api=1&query=${encoded}`;
+};
 
 const DeliveryGroupCard = ({
   deliveryGroup,
@@ -135,6 +145,7 @@ const DeliveryGroupCard = ({
           <div className="order-list">
             {routeOrders.map(order => {
               const phoneNumber = order.customer_phone_number || order.phone || order.customer_phone;
+              const addressString = typeof order.address === 'string' ? order.address : ''; // Handle non-string addresses if needed
               return (
                 <div key={order._id} className="route-order-item">
                   {order.missing ? (
@@ -155,7 +166,20 @@ const DeliveryGroupCard = ({
                       )}
                       <div className="order-item-details">
                         <div className="order-customer">{order.customer_name}</div>
-                        <div className="order-address">{order.address}</div>
+                        {addressString && (
+                          <div className="order-address-line">
+                            {addressString}
+                            <a
+                              href={navUrlFor(addressString)}
+                              className="map-icon-link"
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              aria-label={t('navigate_to_address')}
+                            >
+                              <MapPin className="map-icon" />
+                            </a>
+                          </div>
+                        )}
                         {phoneNumber && (
                           <div className="order-phone-line">
                             {phoneNumber}
