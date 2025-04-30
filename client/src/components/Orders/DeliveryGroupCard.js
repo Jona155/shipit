@@ -151,7 +151,12 @@ const DeliveryGroupCard = ({
                       </div>
                     )}
                     <div className="order-item-details">
-                      <div className="order-customer">{order.customer_name}</div>
+                      <div className="order-customer">
+                        {order.customer_name}
+                        {(order.customer_phone_number || order.phone || order.customer_phone) && (
+                          <span className="order-phone"> · {order.customer_phone_number || order.phone || order.customer_phone}</span>
+                        )}
+                      </div>
                       <div className="order-address">{order.address}</div>
                     </div>
                   </>
