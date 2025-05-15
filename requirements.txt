@@ -6,3 +6,4 @@ Flask-CORS==4.0.0
 python-dotenv==1.0.0
 dnspython==2.4.2
 flask-talisman
+python-dateutil==2.9.0.post0
