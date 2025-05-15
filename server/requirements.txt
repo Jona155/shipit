@@ -6,3 +6,4 @@ certifi==2023.7.22
 Flask-CORS==4.0.0
 python-dotenv==1.0.0
 dnspython==2.4.2
+flask-talisman

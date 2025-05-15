@@ -1,6 +1,7 @@
 import os
 import logging
 from dotenv import load_dotenv
+from flask_talisman import Talisman
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +35,9 @@ from services.database import init_db
 
 app = Flask(__name__, static_folder='../client/build')
 CORS(app)
+
+# Initialize Talisman for HSTS
+Talisman(app, content_security_policy=None, max_age=63072000, include_subdomains=True, preload=True)
 
 # Initialize database
 try:
