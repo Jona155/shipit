@@ -16,9 +16,13 @@ def get_businesses():
         users_dal = UsersDAL(db)  # Create an instance to fetch user details
 
         # Get the token from the request header
-        token = request.headers.get('authToken')
+        auth_header = request.headers.get('Authorization')
+        token = None
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+        
         if not token:
-            return jsonify({"error": "No token provided"}), 401
+            return jsonify({"error": "No token provided or incorrect format"}), 401
 
         # Validate the token and get the user ID
         user_id = auth_dal.validate_token(token)
@@ -48,9 +52,13 @@ def get_business(business_id):
         businesses_dal = BusinessesDAL(db)
 
         # Get the token from the request header
-        token = request.headers.get('authToken')
+        auth_header = request.headers.get('Authorization')
+        token = None
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+
         if not token:
-            return jsonify({"error": "No token provided"}), 401
+            return jsonify({"error": "No token provided or incorrect format"}), 401
 
         # Validate the token and get the user ID
         user_id = auth_dal.validate_token(token)
@@ -90,8 +98,10 @@ def get_vendors():
         businesses_dal = BusinessesDAL(db)
         
         # Get the token from the request header
-        token = request.headers.get('authToken')
-        logging.info(f"Auth token present: {bool(token)}")
+        auth_header = request.headers.get('Authorization')
+        token = None
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
         
         # DEBUG: Log all headers to diagnose auth issues
         all_headers = {k: v for k, v in request.headers.items()}
