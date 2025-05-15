@@ -37,7 +37,12 @@ app = Flask(__name__, static_folder='../client/build')
 CORS(app)
 
 # Initialize Talisman for HSTS
-Talisman(app, content_security_policy=None, max_age=63072000, include_subdomains=True, preload=True)
+Talisman(app, 
+         content_security_policy=None,
+         strict_transport_security=True,
+         strict_transport_security_max_age=63072000,
+         strict_transport_security_include_subdomains=True,
+         strict_transport_security_preload=True)
 
 # Initialize database
 try:
