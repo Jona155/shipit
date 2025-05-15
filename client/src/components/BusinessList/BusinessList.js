@@ -27,8 +27,11 @@ const BusinessList = () => {
     const fetchBusinesses = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`/api/businesses`, {
-          headers: { 'authToken': token }
+        setLoading(true);
+        const response = await fetch(`/api/businesses/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
 
         if (!response.ok) {

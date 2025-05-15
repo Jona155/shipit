@@ -35,7 +35,7 @@ const Users = () => {
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/users/business/${businessId}`);
+        const response = await fetch(`${API_BASE_URL}/api/users/business/${businessId}/`);
         if (!response.ok) {
           throw new Error(t('failed_to_fetch_users'));
         }
@@ -70,7 +70,7 @@ const Users = () => {
   const addUser = async (user) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/add`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/add/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ const Users = () => {
         ...updatedUser,
       };
       
-      const response = await fetch(`${API_BASE_URL}/api/users/update/${updatedUser.uid}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/update/${updatedUser.uid}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -139,18 +139,22 @@ const Users = () => {
   };
 
   const deleteUser = async (userId) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/users/delete/${userId}`, {
-        method: 'DELETE',
-      });
+    // Display confirmation dialog before deleting user
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        // Make API call to delete user
+        const response = await fetch(`${API_BASE_URL}/api/users/delete/${userId}/`, {
+          method: 'DELETE',
+        });
 
-      if (!response.ok) {
-        throw new Error(t('failed_to_delete_user'));
+        if (!response.ok) {
+          throw new Error(t('failed_to_delete_user'));
+        }
+
+        setUsers(users.filter(user => user.uid !== userId));
+      } catch (err) {
+        setError(err.message);
       }
-
-      setUsers(users.filter(user => user.uid !== userId));
-    } catch (err) {
-      setError(err.message);
     }
   };
 
