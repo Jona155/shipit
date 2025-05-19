@@ -10,6 +10,7 @@
   transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
   border-radius: 50%; /* For hover background */
   padding: 10px; /* Create space for the hover circle */
+  position: relative; /* For custom tooltip positioning */
 }
 
 .delete-order-icon-wrapper svg {
@@ -27,7 +28,63 @@
   color: #F04438; /* Icon fills #F04438 on hover */
 }
 
+/* Disabled state - 30% opacity, cursor not-allowed as per UX instructions */
+.delete-order-icon-wrapper.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  /* Remove pointer-events: none to allow tooltip to show */
+}
+
+/* Prevent hover effects on disabled state but allow tooltip */
+.delete-order-icon-wrapper.disabled:hover {
+  background-color: transparent; /* Remove hover background */
+}
+
+.delete-order-icon-wrapper.disabled:hover svg {
+  color: currentColor; /* Keep original color */
+}
+
+/* Custom tooltip for better visibility */
+.delete-order-icon-wrapper::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: max-content;
+  max-width: 200px;
+}
+
+.delete-order-icon-wrapper:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Position tooltip properly even in the row layout */
+.delete-order-icon-wrapper.delete-order-icon-row::after {
+  bottom: 125%;
+}
+
 /* RTL support - in case we need to adjust positioning for RTL layouts */
 html[dir="rtl"] .delete-order-icon-wrapper {
   /* Any RTL-specific adjustments would go here */
+}
+
+/* RTL support - tooltip handling for RTL layouts */
+html[dir="rtl"] .delete-order-icon-wrapper::after {
+  right: 50%;
+  left: auto;
+  transform: translateX(50%);
 } 

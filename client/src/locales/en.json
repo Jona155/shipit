@@ -282,6 +282,7 @@
   "deleteOrderTitle": "Delete order {shortId}?",
   "deleteOrderBody": "This removes the order from your view only.",
   "deleteOrderAction": "Delete Order",
+  "deleteOrderDisabledTooltip": "Cannot delete order with selected vendor",
   "cancelAction": "Cancel",
   "deleteConfirmAction": "Delete"
 }

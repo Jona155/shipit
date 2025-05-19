@@ -12,7 +12,14 @@ const TrashIcon = () => (
   </svg>
 );
 
-const DeleteOrderIcon = React.memo(({ orderShortId, onClick, isVendor, className = '' }) => {
+const DeleteOrderIcon = React.memo(({ 
+  orderShortId, 
+  onClick, 
+  isVendor, 
+  className = '',
+  isInTender = false,
+  hasSelectedVendor = false 
+}) => {
   const { t } = useTranslation();
 
   // Hide completely for vendors per requirements
@@ -20,7 +27,17 @@ const DeleteOrderIcon = React.memo(({ orderShortId, onClick, isVendor, className
     return null;
   }
 
+  // Determine if the delete button should be disabled
+  const isDisabled = isInTender && hasSelectedVendor;
+
+  // Create tooltip text based on state
+  const tooltipText = isDisabled 
+    ? t('deleteOrderDisabledTooltip', 'Cannot delete order with selected vendor')
+    : t('deleteOrderAction', { shortId: orderShortId });
+
   const handleClick = (e) => {
+    if (isDisabled) return;
+    
     e.stopPropagation(); // Prevent card click or other parent events
     e.preventDefault(); // Prevent any default behavior
     if (onClick) {
@@ -30,13 +47,15 @@ const DeleteOrderIcon = React.memo(({ orderShortId, onClick, isVendor, className
 
   return (
     <div 
-      className={`delete-order-icon-wrapper ${className}`}
+      className={`delete-order-icon-wrapper ${className} ${isDisabled ? 'disabled' : ''}`}
       onClick={handleClick}
-      onKeyPress={(e) => e.key === 'Enter' && handleClick(e)}
+      onKeyPress={(e) => !isDisabled && e.key === 'Enter' && handleClick(e)}
       role="button"
-      tabIndex={0}
-      aria-label={t('deleteOrderAction', { shortId: orderShortId })}
-      title={t('deleteOrderAction', { shortId: orderShortId })}
+      tabIndex={isDisabled ? -1 : 0}
+      aria-label={tooltipText}
+      title={tooltipText}  // Keep title for native tooltips as fallback
+      data-tooltip={tooltipText}  // Custom tooltip attribute
+      aria-disabled={isDisabled}
     >
       <TrashIcon />
     </div>

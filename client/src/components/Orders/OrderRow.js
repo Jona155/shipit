@@ -60,6 +60,7 @@ const OrderRow = ({
   const orderTimestamp = order.status?.[0]?.timestamp || order.creation_time || order.created_at;
   const courierName = order.courier_name;
   const isInTender = order.in_tender === true;
+  const hasSelectedVendor = order.selected_vendor != null;
   
   // --- Lateness Calculation (remains the same) ---
   let isLate = false;
@@ -106,6 +107,8 @@ const OrderRow = ({
             onClick={() => onDeleteOrder(order._id, orderId)} 
             isVendor={isVendor}
             className="delete-order-icon-row"
+            isInTender={isInTender}
+            hasSelectedVendor={hasSelectedVendor}
           />
         )}
         {showCheckbox && (

@@ -277,6 +277,7 @@
   "deleteOrderTitle": "מחיקה של הזמנה {shortId}?",
   "deleteOrderBody": "פעולה זו תסיר את ההזמנה מהתצוגה בלבד.",
   "deleteOrderAction": "מחק הזמנה",
+  "deleteOrderDisabledTooltip": "לא ניתן למחוק הזמנה עם ספק שנבחר",
   "cancelAction": "ביטול",
   "deleteConfirmAction": "מחיקה"
 }

@@ -39,6 +39,8 @@ const OrderCard = ({
               orderShortId={order.short_id || order._id} 
               onClick={() => onDeleteOrder(order._id, order.short_id || order._id)} 
               isVendor={isVendor}
+              isInTender={isInTender}
+              hasSelectedVendor={hasSelectedWinner}
             />
           )}
           {activeTab === 'accepted' && !order.in_tender && (
