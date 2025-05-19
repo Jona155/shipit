@@ -38,6 +38,7 @@ const OrdersCards = ({
   businessSLA, // Pass this down if needed for late status
   onViewTenderStatus,
   onDeleteOrder, // New prop for delete functionality
+  onEditOrder, // Add the edit order prop
   isVendor // New prop to determine if user is a vendor
 }) => {
   const { t } = useTranslation();
@@ -142,6 +143,7 @@ const OrdersCards = ({
               onReturnToOnTheirWay={onReturnToOnTheirWay}
               businessSLA={businessSLA}
               onDeleteOrder={onDeleteOrder} // Pass delete handler
+              onEditOrder={onEditOrder} // Pass edit handler
               isVendor={isVendor} // Pass vendor flag
             />
           ))}

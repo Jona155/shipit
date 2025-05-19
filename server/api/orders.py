@@ -441,6 +441,138 @@ def soft_delete_order(order_id):
         logging.error(traceback.format_exc())
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
+@bp.route('/<order_id>/edit', methods=['PUT'])
+def edit_order(order_id):
+    """
+    Edit specific fields of an order while preserving edit history.
+    Only accessible to operators and admins, not vendors.
+    """
+    try:
+        logging.info(f"Received edit request for order: {order_id}")
+        db = get_db()
+        orders_dal = OrdersDAL(db)
+        auth_dal = AuthDAL(db)
+        
+        # Validate token
+        token = request.headers.get('authToken')
+        if not token:
+            logging.warning("No authentication token provided")
+            return jsonify({"error": "No token provided"}), 401
+            
+        user_id = auth_dal.validate_token(token)
+        if not user_id:
+            logging.warning(f"Invalid token: {token[:10]}...")
+            return jsonify({"error": "Invalid or expired token"}), 401
+        
+        logging.info(f"Authenticated user: {user_id}")
+        
+        # TODO: Add role verification to ensure user is operator/admin
+        
+        data = request.json
+        editable_fields = ['address', 'phone', 'amount', 'comments', 'customer_name']
+        
+        # Filter to only allow editable fields
+        update_data = {k: v for k, v in data.items() if k in editable_fields}
+        
+        if not update_data:
+            return jsonify({"error": "No valid fields to update"}), 400
+        
+        # Record edit in order history
+        update_data['edit_history'] = {
+            'edited_at': datetime.utcnow(),
+            'edited_by': user_id,
+            'previous_values': {k: data.get(f'previous_{k}') for k in update_data.keys() if data.get(f'previous_{k}')}
+        }
+        
+        updated_order = orders_dal.edit_order(order_id, update_data)
+        
+        if not updated_order:
+            return jsonify({"error": "Order not found or could not be updated"}), 404
+            
+        return jsonify({
+            "message": "Order updated successfully",
+            "updated_order": updated_order
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error editing order {order_id}: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+# Add a new route for editing orders that accepts order_id in the request body
+@bp.route('/edit', methods=['PUT'])
+def edit_order_body():
+    """
+    Edit specific fields of an order while preserving edit history.
+    Order ID is provided in the request body instead of URL parameter.
+    Only accessible to operators and admins, not vendors.
+    """
+    try:
+        logging.info(f"Received edit request via /edit endpoint")
+        db = get_db()
+        orders_dal = OrdersDAL(db)
+        auth_dal = AuthDAL(db)
+        
+        # Validate token
+        token = request.headers.get('authToken')
+        if not token:
+            logging.warning("No authentication token provided")
+            return jsonify({"error": "No token provided"}), 401
+            
+        user_id = auth_dal.validate_token(token)
+        if not user_id:
+            logging.warning(f"Invalid token: {token[:10]}...")
+            return jsonify({"error": "Invalid or expired token"}), 401
+        
+        logging.info(f"Authenticated user: {user_id}")
+        
+        # TODO: Add role verification to ensure user is operator/admin
+        
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        # Get order_id from request body
+        order_id = data.get('_id')
+        if not order_id:
+            return jsonify({"error": "No order_id provided in request body"}), 400
+            
+        logging.info(f"Editing order: {order_id}")
+        
+        editable_fields = ['address', 'phone', 'amount', 'comments', 'customer_name', 
+                          'customer_phone_number', 'comments_for_order', 'comments_for_delivery',
+                          'apartment_number', 'apartment_floor_number']
+        
+        # Filter to only allow editable fields
+        update_data = {k: v for k, v in data.items() if k in editable_fields}
+        
+        if not update_data:
+            return jsonify({"error": "No valid fields to update"}), 400
+        
+        # Record edit in order history
+        update_data['edit_history'] = {
+            'edited_at': datetime.utcnow(),
+            'edited_by': user_id,
+            'previous_values': {k: data.get(f'previous_{k}') for k in update_data.keys() if data.get(f'previous_{k}')}
+        }
+        
+        updated_order = orders_dal.edit_order(order_id, update_data)
+        
+        if not updated_order:
+            return jsonify({"error": "Order not found or could not be updated"}), 404
+            
+        return jsonify({
+            "message": "Order updated successfully",
+            "updated_order": updated_order
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error editing order: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
 # Diagnostic catchall route - will capture any unrecognized route under /api/orders
 @bp.route('/<path:subpath>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def catchall_route(subpath):
@@ -457,6 +589,8 @@ def catchall_route(subpath):
             "/api/orders/cancel-tender",
             "/api/orders/tender-response",
             "/api/orders/select-vendor",
-            "/api/orders/<order_id>/soft-delete"
+            "/api/orders/<order_id>/soft-delete",
+            "/api/orders/<order_id>/edit",
+            "/api/orders/edit"
         ]
     }), 404

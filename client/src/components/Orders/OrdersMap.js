@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import './OrdersMap.css';
 import { getOrderStatus } from "./orderUtils";
 import SLATimer from './SLATimer';
+import OrderActionIcons from './OrderActionIcons';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -32,6 +33,26 @@ const generateCourierColors = (couriers) => {
   return courierColors;
 };
 
+// Map adjuster component to fix map rendering issues
+const MapAdjuster = () => {
+  const map = useMap();
+  
+  useEffect(() => {
+    // This timeout ensures the map is properly sized after mount
+    setTimeout(() => {
+      console.log('Invalidating map size');
+      map.invalidateSize();
+    }, 100);
+    
+    // Set bounds if we have orders
+    return () => {
+      console.log('MapAdjuster unmounting');
+    };
+  }, [map]);
+  
+  return null;
+};
+
 const OrdersMap = ({
   orders,
   activeTab,
@@ -51,7 +72,10 @@ const OrdersMap = ({
   isRTL,
   onBuildRoute,
   onCancelBuildRoute,
-  businessSLA
+  businessSLA,
+  onDeleteOrder,
+  onEditOrder,
+  isVendor
 }) => {
   const { t } = useTranslation();
 
@@ -62,18 +86,6 @@ const OrdersMap = ({
     const couriers = [...new Set(filteredOrders.map(order => order.courier_name || order.courier_id).filter(Boolean))];
     return generateCourierColors(couriers);
   }, [filteredOrders]);
-
-  const MapAdjuster = () => {
-    const map = useMap();
-    useEffect(() => {
-      map.invalidateSize();
-      if (filteredOrders.length > 0) {
-        const bounds = L.latLngBounds(filteredOrders.map(order => [order.location.lat, order.location.lng]));
-        map.fitBounds(bounds);
-      }
-    }, [map, filteredOrders]);
-    return null;
-  };
 
   const handleMarkerClick = (orderId) => {
     if (isSelectingForRoute) {
@@ -164,11 +176,23 @@ const OrdersMap = ({
                     </div>
                   )}
                   
-                  {isSelectingForRoute && (
-                    <button onClick={() => onSelectOrder(order._id)}>
-                      {selectedOrders.includes(order._id) ? t('deselect') : t('select')}
-                    </button>
-                  )}
+                  {/* Action buttons - now uses the OrderActionIcons component */}
+                  <div className="popup-actions">
+                    {isSelectingForRoute && (
+                      <button onClick={() => onSelectOrder(order._id)} className="popup-action-button">
+                        {selectedOrders.includes(order._id) ? t('deselect') : t('select')}
+                      </button>
+                    )}
+                    
+                    {/* Replace individual edit/delete buttons with OrderActionIcons */}
+                    <OrderActionIcons
+                      order={order}
+                      onEditOrder={onEditOrder}
+                      onDeleteOrder={onDeleteOrder}
+                      isVendor={isVendor}
+                      className="popup-action-icons"
+                    />
+                  </div>
                 </div>
               </Popup>
             </Marker>

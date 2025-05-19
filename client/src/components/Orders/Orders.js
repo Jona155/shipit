@@ -45,6 +45,8 @@ const Orders = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [orderShortIdToDelete, setOrderShortIdToDelete] = useState('');
+  const [isEditingOrder, setIsEditingOrder] = useState(false);
+  const [orderToEdit, setOrderToEdit] = useState(null);
 
   // Ref to hold the latest orders for incremental polling
   const businessType = localStorage.getItem('currentBusinessType');
@@ -719,6 +721,64 @@ const Orders = () => {
     setOrderShortIdToDelete('');
   }, []);
 
+  // Add the edit order handlers
+  const handleEditOrderClick = useCallback(order => {
+    setOrderToEdit(order);
+    setIsEditingOrder(true);
+    setShowOrderForm(true);
+  }, []);
+
+  const handleSaveOrderEdit = useCallback(async editedOrderData => {
+    try {
+      // Get the auth token for protected API
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        showAlertMessage(t('error_auth_required'), 'error');
+        return;
+      }
+
+      console.log('Sending edit request for order:', editedOrderData);
+
+      // Use the /api/orders/edit endpoint with the order ID in the body instead of URL params
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/orders/edit`,
+        {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'authToken': authToken
+          },
+          body: JSON.stringify(editedOrderData)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update order');
+      }
+
+      const result = await response.json();
+      
+      // Update order in local state for optimistic UI update
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order._id === editedOrderData._id ? result.updated_order : order
+        )
+      );
+      showAlertMessage(t('order_updated_success'));
+    } catch (error) {
+      console.error('Error updating order:', error);
+      showAlertMessage(
+        error.message || t('error_updating_order'),
+        'error'
+      );
+    } finally {
+      setIsEditingOrder(false);
+      setOrderToEdit(null);
+      setShowOrderForm(false);
+    }
+  }, [t, showAlertMessage]);
+
   // During the initial load, show a full-page loader.
   // Once the orders are loaded, incremental updates happen seamlessly.
   if (initialLoad && loading) return <Loading size="fullscreen" />;
@@ -781,6 +841,7 @@ const Orders = () => {
             businessType={businessType}
             businessSLA={businessSettings?.sla}
             onDeleteOrder={handleDeleteOrderClick}
+            onEditOrder={handleEditOrderClick}
             isVendor={businessType === 'vendor'}
           />
         </div>
@@ -805,6 +866,7 @@ const Orders = () => {
             onCancelBuildRoute={handleCancelBuildRoute}
             businessSLA={businessSettings?.sla}
             onDeleteOrder={handleDeleteOrderClick}
+            onEditOrder={handleEditOrderClick}
             isVendor={businessType === 'vendor'}
           />
           
@@ -834,7 +896,17 @@ const Orders = () => {
       />
       {showOrderForm && (
         <div className="side-panel visible">
-          <OrderForm onSubmit={handleAddOrder} onClose={() => setShowOrderForm(false)} />
+          <OrderForm 
+            onSubmit={handleAddOrder}
+            onClose={() => {
+              setShowOrderForm(false);
+              setIsEditingOrder(false);
+              setOrderToEdit(null);
+            }}
+            isEditing={isEditingOrder}
+            orderData={orderToEdit}
+            onSaveEdit={handleSaveOrderEdit}
+          />
         </div>
       )}
       {showAlert && <Alert message={alertMessage} type={alertType} />}

@@ -281,8 +281,18 @@
   
   "deleteOrderTitle": "Delete order {shortId}?",
   "deleteOrderBody": "This removes the order from your view only.",
-  "deleteOrderAction": "Delete Order",
+  "deleteOrderAction": "Delete",
   "deleteOrderDisabledTooltip": "Cannot delete order with selected vendor",
   "cancelAction": "Cancel",
-  "deleteConfirmAction": "Delete"
+  "deleteConfirmAction": "Delete",
+
+  "edit_order": "Edit Order",
+  "editOrder": "Edit",
+  "editOrderDisabledTooltip": "Cannot edit this order",
+  "deleteOrder": "Delete Order {shortId}",
+  "deleteOrderAction": "Delete",
+  "deleteOrderDisabledTooltip": "Cannot delete order with selected vendor",
+  "save_changes": "Save Changes",
+  "order_updated_success": "Order updated successfully",
+  "error_updating_order": "Error updating order"
 }

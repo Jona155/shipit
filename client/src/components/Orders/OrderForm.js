@@ -8,22 +8,61 @@ import '../common/styles.css';
 
 const libraries = ['places'];
 
-const OrderForm = ({ onSubmit, onClose }) => {
+// Default form state for new orders
+const getDefaultOrderData = () => ({
+  customer_name: '',
+  customer_phone_number: '',
+  address: '',
+  initial_address: '',
+  input_address: '',
+  amount: '',
+  comments_for_order: '',
+  comments_for_delivery: '',
+  apartment_number: '',
+  apartment_floor_number: '',
+  location: { lat: 0, lng: 0 },
+  place_id: '',
+  status: 'ACCEPTED'
+});
+
+const OrderForm = ({ 
+  onSubmit, 
+  onClose, 
+  isEditing = false, 
+  orderData: existingOrderData = null,
+  onSaveEdit = null
+}) => {
   const { t } = useTranslation();
-  const [orderData, setOrderData] = useState({
-    customer_name: '',
-    customer_phone_number: '',
-    address: '',
-    initial_address: '',
-    input_address: '',
-    amount: '',
-    comments_for_order: '',
-    comments_for_delivery: '',
-    apartment_number: '',
-    apartment_floor_number: '',
-    location: { lat: 0, lng: 0 },
-    place_id: '',
-    status: 'ACCEPTED'
+  
+  // Initialize with existing data if editing, otherwise use defaults
+  const [orderData, setOrderData] = useState(() => {
+    if (isEditing && existingOrderData) {
+      // Format data for editing
+      return {
+        customer_name: existingOrderData.customer_name || '',
+        customer_phone_number: existingOrderData.customer_phone_number || '',
+        address: existingOrderData.address || '',
+        initial_address: existingOrderData.initial_address || existingOrderData.address || '',
+        input_address: existingOrderData.input_address || existingOrderData.address || '',
+        amount: existingOrderData.amount || '',
+        comments_for_order: existingOrderData.comments_for_order || '',
+        comments_for_delivery: existingOrderData.comments_for_delivery || '',
+        apartment_number: existingOrderData.apartment_number || '',
+        apartment_floor_number: existingOrderData.apartment_floor_number || '',
+        location: existingOrderData.location || { lat: 0, lng: 0 },
+        place_id: existingOrderData.place_id || '',
+        status: existingOrderData.status?.[0]?.value || 'ACCEPTED'
+      };
+    }
+    return getDefaultOrderData();
+  });
+
+  // Store original values for edit history
+  const [originalValues, setOriginalValues] = useState(() => {
+    if (isEditing && existingOrderData) {
+      return { ...orderData };
+    }
+    return {};
   });
 
   const [autocomplete, setAutocomplete] = useState(null);
@@ -81,32 +120,68 @@ const OrderForm = ({ onSubmit, onClose }) => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    const timestamp = new Date().toISOString();
-
-    // Build final order object for submission
-    const newOrder = {
-      ...orderData,
-      timestamp,
-      order_time: timestamp,
-      status: [
-        {
-          value: 'ACCEPTED',
-          timestamp
+    
+    if (isEditing) {
+      // Prepare edited data with change tracking for audit
+      const changedFields = {};
+      const previousValues = {};
+      
+      // Only include fields that have changed in the update
+      Object.keys(orderData).forEach(key => {
+        if (orderData[key] !== originalValues[key]) {
+          changedFields[key] = orderData[key];
+          previousValues[`previous_${key}`] = originalValues[key];
         }
-      ],
-      short_id: Math.random().toString(36).substring(2, 6).toUpperCase()
-    };
-
-    onSubmit(newOrder);
+      });
+      
+      // Only proceed if there are changes
+      if (Object.keys(changedFields).length > 0) {
+        // Always include the order ID and essential fields
+        onSaveEdit({
+          _id: existingOrderData._id,
+          ...changedFields,
+          ...previousValues,
+          // Include location and place_id if they exist
+          location: orderData.location || existingOrderData.location,
+          place_id: orderData.place_id || existingOrderData.place_id
+        });
+      } else {
+        // No changes were made
+        onClose();
+      }
+    } else {
+      // Create new order
+      const timestamp = new Date().toISOString();
+      
+      // Build final order object for submission
+      const newOrder = {
+        ...orderData,
+        timestamp,
+        order_time: timestamp,
+        status: [
+          {
+            value: 'ACCEPTED',
+            timestamp
+          }
+        ],
+        short_id: Math.random().toString(36).substring(2, 6).toUpperCase()
+      };
+      
+      onSubmit(newOrder);
+    }
   };
 
   if (!isLoaded) return <Loading size="medium" />;
   if (loadingError) return <div className="error-message">{t('maps_load_error')}</div>;
 
+  // Determine title and button text based on mode
+  const formTitle = isEditing ? t('edit_order') : t('new_order');
+  const submitButtonText = isEditing ? t('save_changes') : t('add_order');
+
   return (
       <div className="order-form-container">
         <button onClick={onClose} className="close-button">×</button>
-        <h2>{t('new_order')}</h2>
+        <h2>{formTitle}</h2>
         <form onSubmit={handleSubmit} className="order-form">
           <input
               type="text"
@@ -181,7 +256,7 @@ const OrderForm = ({ onSubmit, onClose }) => {
               className="form-input"
           />
           <button type="submit" className="submit-button">
-            {t('add_order')}
+            {submitButtonText}
           </button>
         </form>
       </div>

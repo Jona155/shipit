@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Phone, MapPin, Clock, AlertTriangle, UserCircle } from 'lucide-react'; 
 import OrderStatusChip from './OrderStatusChip'; // Import new component
 import OrderActionMenu from './OrderActionMenu'; // Import new component
-import DeleteOrderIcon from './DeleteOrderIcon'; // Import the delete icon component
+import OrderActionIcons from './OrderActionIcons'; // Import new action icons container
 import { getStatusBarClass } from '../../utils/designTokens'; // Import helper
 import './OrdersList.css'; 
 import { getOrderStatus } from "./orderUtils";
@@ -42,6 +42,7 @@ const OrderRow = ({
   onUnassignOrder,    
   onReturnToOnTheirWay, 
   onDeleteOrder, // Add delete handler
+  onEditOrder, // Add edit handler
   // Other props
   isRTL,
   businessType,
@@ -100,17 +101,14 @@ const OrderRow = ({
 
       {/* Column 1: Status Chip + Order Number + Selection */}
       <div className="order-col col-status">
-        {/* Add Delete Icon for non-vendor users */}
-        {!isVendor && (
-          <DeleteOrderIcon 
-            orderShortId={orderId}
-            onClick={() => onDeleteOrder(order._id, orderId)} 
-            isVendor={isVendor}
-            className="delete-order-icon-row"
-            isInTender={isInTender}
-            hasSelectedVendor={hasSelectedVendor}
-          />
-        )}
+        {/* Add Edit and Delete Icons wrapped in OrderActionIcons */}
+        <OrderActionIcons
+          order={order}
+          onEditOrder={onEditOrder}
+          onDeleteOrder={onDeleteOrder}
+          isVendor={isVendor}
+          className="order-row-actions"
+        />
         {showCheckbox && (
           <input
             type="checkbox"

@@ -102,6 +102,23 @@
 .col-status {
   font-weight: 600;
   gap: 8px; /* Reduce gap slightly */
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Style for order row actions in the status column */
+.order-row-actions {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* RTL support for order row actions */
+.rtl .order-row-actions {
+  right: auto;
+  left: 0;
 }
 
 /* Checkbox styling */
@@ -455,6 +472,20 @@
 }
 
 html[dir="rtl"] .delete-order-icon-row {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+/* New class for the icons container */
+.order-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+/* For RTL support */
+[dir="rtl"] .order-icons {
   margin-right: 0;
   margin-left: 8px;
 } 

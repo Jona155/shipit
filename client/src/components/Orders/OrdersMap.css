@@ -2,12 +2,13 @@
   width: 100%;
   height: 100%;
   position: relative;
+  min-height: 600px;
 }
 
 .leaflet-container {
   width: 100%;
   height: 100%;
-  min-height: 500px;
+  min-height: 600px;
 }
 
 .map-popup-content {
@@ -41,39 +42,39 @@
 /* Build route button and map controls */
 .map-controls {
   position: absolute;
-  top: 80px; /* Move down to avoid overlap with any other controls */
-  right: 10px;
-  z-index: 1000; /* Higher than the map but lower than popups */
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
   display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
+.map-controls.rtl {
+  right: auto;
+  left: 20px;
+}
+
 .build-route-button {
-  padding: 8px 16px;
-  background-color: #3a86ff;
-  color: white;
-  border: none;
+  padding: 10px 15px;
   border-radius: 4px;
+  border: none;
+  background-color: #3B82F6;
+  color: white;
   cursor: pointer;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s;
-  opacity: 0.9;
+  font-weight: 600;
 }
 
 .build-route-button:hover {
-  background-color: #2a66cf;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
-  opacity: 1;
+  background-color: #2563EB;
 }
 
 .build-route-button.cancel {
-  background-color: #dc3545;
+  background-color: #EF4444;
 }
 
 .build-route-button.cancel:hover {
-  background-color: #c82333;
+  background-color: #DC2626;
 }
 
 /* RTL support */
@@ -88,15 +89,16 @@
 }
 
 .popup-sla-timer {
+  margin-top: 8px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  gap: 4px;
 }
 
 .popup-sla-timer p {
   margin: 0;
+  font-weight: 600;
 }
 
 .popup-sla-timer .timer-container {
@@ -117,4 +119,50 @@ html[lang="he"] .leaflet-popup-content {
 /* LTR direction for English language */
 html[lang="en"] .leaflet-popup-content {
   direction: ltr;
+}
+
+/* Popup action styles */
+.popup-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-action-button {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s, color 0.2s;
+  background-color: #E5E7EB;
+}
+
+.popup-action-button:hover {
+  background-color: #D1D5DB;
+}
+
+/* Style for the action icons container in the popup */
+.popup-action-icons {
+  display: flex;
+  justify-content: center;
+}
+
+/* Popup edit and delete buttons */
+.popup-edit-button {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.popup-delete-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* RTL support */
+[dir="rtl"] .popup-actions {
+  flex-direction: row-reverse;
 } 

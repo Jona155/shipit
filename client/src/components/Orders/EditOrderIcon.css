@@ -1,56 +1,61 @@
-.delete-order-icon-wrapper {
+.edit-order-icon {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  border: none;
+  background-color: transparent;
   border-radius: 4px;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s, color 0.2s;
   padding: 0;
+  outline: none;
   position: relative;
   margin: 4px;
-  /* Optical alignment fix (nudge down 1px) */
-  transform: translateY(1px);
 }
 
-.delete-order-icon-wrapper svg {
-  width: 18px;
-  height: 18px;
-  color: #4B5563;
-  stroke-width: 2px;
-}
-
-.delete-order-icon-wrapper:hover {
-  opacity: 1;
+.edit-order-icon:hover,
+.edit-order-icon:focus {
   background-color: #F3F4F6;
+  opacity: 1;
 }
 
-/* Disabled state */
-.delete-order-icon-wrapper.disabled {
+.edit-order-icon.disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-/* Prevent hover effects on disabled state */
-.delete-order-icon-wrapper.disabled:hover {
+.edit-order-icon.disabled:hover,
+.edit-order-icon.disabled:focus {
   background-color: transparent;
   opacity: 0.3;
 }
 
+.edit-order-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: #4B5563;
+  stroke-width: 2px;
+}
+
 /* For mobile touch targets */
 @media (max-width: 768px) {
-  .delete-order-icon-wrapper {
+  .edit-order-icon {
     padding: 4px;
     min-width: 44px;
     min-height: 44px;
   }
 }
 
-/* Custom tooltip */
-.delete-order-icon-wrapper::after {
+/* RTL support */
+[dir="rtl"] .edit-order-icon svg {
+  transform: scaleX(-1);
+}
+
+/* Tooltip */
+.edit-order-icon::after {
   content: attr(data-tooltip);
   position: absolute;
   bottom: 120%;
@@ -70,26 +75,21 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.delete-order-icon-wrapper:hover::after,
-.delete-order-icon-wrapper:focus::after {
+.edit-order-icon:hover::after,
+.edit-order-icon:focus::after {
   opacity: 1;
   visibility: visible;
 }
 
-/* RTL support - in RTL, we want to nudge up instead of down */
-[dir="rtl"] .delete-order-icon-wrapper {
-  transform: translateY(-1px);
-}
-
-/* RTL support - tooltip handling for RTL layouts */
-[dir="rtl"] .delete-order-icon-wrapper::after {
+/* RTL support for tooltip */
+[dir="rtl"] .edit-order-icon::after {
   right: 50%;
   left: auto;
   transform: translateX(50%);
 }
 
 /* Subtle animation */
-.delete-order-icon-wrapper {
+.edit-order-icon {
   animation: fadeIn 0.3s ease-in-out;
 }
 

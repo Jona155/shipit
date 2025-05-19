@@ -1,0 +1,55 @@
+.order-action-icons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Right-aligned in LTR mode */
+  gap: 4px; /* Reduced gap between buttons as requested */
+  margin: 0;
+  padding: 0;
+}
+
+/* RTL support */
+[dir="rtl"] .order-action-icons {
+  flex-direction: row-reverse;
+  justify-content: flex-start; /* Left-aligned in RTL mode */
+}
+
+/* For proper positioning in OrderRow */
+.order-row .order-action-icons {
+  margin-left: auto; /* Push to right in LTR */
+  margin-right: 0;
+}
+
+[dir="rtl"] .order-row .order-action-icons {
+  margin-left: 0;
+  margin-right: auto; /* Push to left in RTL */
+}
+
+/* For proper positioning in OrderCard */
+.order-card .order-id .order-action-icons {
+  margin-left: auto; /* Push to right in LTR */
+  margin-right: 0;
+  order: 2; /* Place after other elements in LTR */
+}
+
+[dir="rtl"] .order-card .order-id .order-action-icons {
+  margin-left: 0;
+  margin-right: auto; /* Push to left in RTL */
+  order: -1; /* Place before other elements in RTL */
+}
+
+/* For proper positioning in popup content */
+.leaflet-popup-content .order-action-icons {
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* When the container needs to be hoverable */
+.action-icons-container {
+  display: flex;
+  opacity: 0.6;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.action-icons-container:hover {
+  opacity: 1;
+} 

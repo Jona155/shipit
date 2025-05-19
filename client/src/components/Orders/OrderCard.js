@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { getOrderStatus } from './orderUtils';
 import SLATimer from './SLATimer';
 import OrderCardDetails from './OrderCardDetails';
-import DeleteOrderIcon from './DeleteOrderIcon';
+import OrderActionIcons from './OrderActionIcons';
 
 const OrderCard = ({
   order,
@@ -17,6 +17,7 @@ const OrderCard = ({
   onCancelTender,
   onViewTenderStatus,
   onDeleteOrder,
+  onEditOrder,
   isRTL,
   businessSLA,
   isVendor
@@ -29,20 +30,21 @@ const OrderCard = ({
   const isAssignable = orderStatus === 'accepted' && !order.in_tender;
   const isInTender = order.in_tender === true;
   const hasSelectedWinner = order.selected_vendor != null;
+  
+  // Determine if user can edit the order (same visibility rules as delete, but for vendors it's always false)
+  const canEditOrder = !isVendor;
 
   return (
     <div className={`order-card ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="order-card-header">
         <div className="order-id">
-          {!isVendor && (
-            <DeleteOrderIcon 
-              orderShortId={order.short_id || order._id} 
-              onClick={() => onDeleteOrder(order._id, order.short_id || order._id)} 
-              isVendor={isVendor}
-              isInTender={isInTender}
-              hasSelectedVendor={hasSelectedWinner}
-            />
-          )}
+          <OrderActionIcons
+            order={order}
+            onEditOrder={onEditOrder}
+            onDeleteOrder={onDeleteOrder}
+            isVendor={isVendor}
+            className="order-card-actions"
+          />
           {activeTab === 'accepted' && !order.in_tender && (
             <input
               type="checkbox"

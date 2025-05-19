@@ -59,7 +59,8 @@ body {
 .orders-map-wrapper {
   flex: 1;
   position: relative;
-  height: 100%;
+  height: 600px; /* Set explicit height */
+  width: 100%;
 }
 
 /* Button Styles */

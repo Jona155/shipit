@@ -277,7 +277,15 @@
   "deleteOrderTitle": "מחיקה של הזמנה {shortId}?",
   "deleteOrderBody": "פעולה זו תסיר את ההזמנה מהתצוגה בלבד.",
   "deleteOrderAction": "מחק הזמנה",
-  "deleteOrderDisabledTooltip": "לא ניתן למחוק הזמנה עם ספק שנבחר",
+  "deleteOrderDisabledTooltip": "לא ניתן למחוק הזמנה עם ספק נבחר",
   "cancelAction": "ביטול",
-  "deleteConfirmAction": "מחיקה"
+  "deleteConfirmAction": "מחיקה",
+  "edit_order": "ערוך הזמנה",
+  "editOrder": "עריכה",
+  "editOrderDisabledTooltip": "לא ניתן לערוך הזמנה זו",
+  "deleteOrder": "מחק הזמנה {shortId}",
+  "deleteOrderDisabledTooltip": "לא ניתן למחוק הזמנה עם ספק נבחר",
+  "save_changes": "שמור שינויים",
+  "order_updated_success": "ההזמנה עודכנה בהצלחה",
+  "error_updating_order": "שגיאה בעדכון ההזמנה"
 }

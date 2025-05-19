@@ -497,6 +497,70 @@ class OrdersDAL:
             logging.error(f"Error updating order {order_id}: {str(e)}")
             return False
 
+    def edit_order(self, order_id, update_data):
+        """
+        Edit specific fields of an order while preserving edit history.
+        
+        Args:
+            order_id: The ID of the order to edit
+            update_data: Dictionary containing fields to update and edit_history
+            
+        Returns:
+            The updated order document or None if order not found
+        """
+        try:
+            # First check if the order exists
+            order = self.db.orders.find_one({"$or": [{"_id": order_id}, {"short_id": order_id}]})
+            if not order:
+                logging.warning(f"Order not found for editing: {order_id}")
+                return None
+                
+            # Get the actual ID to use
+            actual_id = order["_id"]
+            
+            # Prepare the update operation
+            edit_history = update_data.pop('edit_history', None)
+            
+            update_ops = {
+                "$set": update_data
+            }
+            
+            # Add edit history if provided
+            if edit_history:
+                if "edit_history" not in order:
+                    update_ops["$set"]["edit_history"] = [edit_history]
+                else:
+                    update_ops["$push"] = {"edit_history": edit_history}
+            
+            # Update the order
+            result = self.db.orders.update_one({"_id": actual_id}, update_ops)
+            
+            if result.modified_count == 0:
+                logging.warning(f"Edit operation did not modify order {order_id}")
+                return None
+                
+            # Fetch and return the updated order
+            updated_order = self.db.orders.find_one({"_id": actual_id})
+            
+            # Format for JSON serialization
+            updated_order['_id'] = str(updated_order['_id'])
+            
+            # Format timestamps
+            for status in updated_order.get('status', []):
+                if 'timestamp' in status and hasattr(status['timestamp'], 'isoformat'):
+                    status['timestamp'] = status['timestamp'].isoformat()
+            
+            # Format edit history timestamps
+            for edit in updated_order.get('edit_history', []):
+                if 'edited_at' in edit and hasattr(edit['edited_at'], 'isoformat'):
+                    edit['edited_at'] = edit['edited_at'].isoformat()
+                    
+            return updated_order
+            
+        except Exception as e:
+            logging.error(f"Error editing order {order_id}: {str(e)}")
+            return None
+
     def get_orders_by_ids(self, order_ids):
         """
         Fetch multiple orders by their IDs.
