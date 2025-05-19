@@ -131,8 +131,9 @@ const DeliveryGroupRow = ({
                 order={order}
                 isRTL={isRTL}
                 // Pass relevant props - note actions might not apply here
-                businessType={businessType} 
-                activeTab={activeTab} // Pass activeTab if OrderRow logic depends on it
+                businessType={businessType}
+                businessId={businessId}
+                activeTab="on_their_way" // Use fixed value for delivery groups
                 // Do not pass selection props unless needed inside group
                 // isSelected={false} 
                 // onSelectOrder={() => {}} 

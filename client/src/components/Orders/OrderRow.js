@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Phone, MapPin, Clock, AlertTriangle, UserCircle } from 'lucide-react'; 
 import OrderStatusChip from './OrderStatusChip'; // Import new component
 import OrderActionMenu from './OrderActionMenu'; // Import new component
+import DeleteOrderIcon from './DeleteOrderIcon'; // Import the delete icon component
 import { getStatusBarClass } from '../../utils/designTokens'; // Import helper
 import './OrdersList.css'; 
 import { getOrderStatus } from "./orderUtils";
@@ -40,10 +41,13 @@ const OrderRow = ({
   onFinishOrder,      
   onUnassignOrder,    
   onReturnToOnTheirWay, 
+  onDeleteOrder, // Add delete handler
   // Other props
   isRTL,
   businessType,
-  businessSLA        
+  businessSLA,
+  businessId,
+  isVendor // Add vendor flag
 }) => {
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
@@ -67,7 +71,9 @@ const OrderRow = ({
   }
   
   // --- Other State Checks (remains the same) ---
-  const showCheckbox = activeTab === 'accepted' && businessType !== 'vendor' && !isInTender;
+  const showCheckbox = (activeTab === 'accepted' && businessType !== 'vendor' && !isInTender) || 
+                      // Allow vendor checkboxes when they've won the tender
+                      (businessType === 'vendor' && order.selected_vendor && String(order.selected_vendor) === String(businessId));
   const statusBarClass = getStatusBarClass(orderStatus, isLate);
 
   // Consolidate action handlers into a single object for cleaner passing
@@ -93,6 +99,15 @@ const OrderRow = ({
 
       {/* Column 1: Status Chip + Order Number + Selection */}
       <div className="order-col col-status">
+        {/* Add Delete Icon for non-vendor users */}
+        {!isVendor && (
+          <DeleteOrderIcon 
+            orderShortId={orderId}
+            onClick={() => onDeleteOrder(order._id, orderId)} 
+            isVendor={isVendor}
+            className="delete-order-icon-row"
+          />
+        )}
         {showCheckbox && (
           <input
             type="checkbox"

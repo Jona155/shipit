@@ -36,10 +36,16 @@ const Users = () => {
       setIsLoading(true);
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/business/${businessId}/`);
+        
         if (!response.ok) {
           throw new Error(t('failed_to_fetch_users'));
         }
+        
         const data = await response.json();
+        
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid response format: expected an array');
+        }
         
         // Process the data to properly map isCurrentlyOnShift
         const processedUsers = data.map(user => {

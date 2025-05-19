@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import OrderCardDetails from './OrderCardDetails';
 import SLATimer from './SLATimer';
@@ -18,6 +18,7 @@ const VendorOrderCard = ({
   const orderStatus = getOrderStatus(order);
   const orderTime = order.status?.[order.status.length - 1]?.timestamp || order.creation_time || order.created_at;
 
+
   // --- State Determination ---
   const isInTender = order.in_tender === true;
   const tenderStatus = order.my_tender_status || ''; 
@@ -25,15 +26,32 @@ const VendorOrderCard = ({
   const hasDeclined = tenderStatus === 'DISAPPROVED';
   const hasSelectedWinner = order.selected_vendor != null;
   
-  // Correct way to check if THIS vendor won
-  const isWon = hasSelectedWinner && order.selected_vendor === businessId; 
+  // Correct way to check if THIS vendor won - fixed to be type-safe
+  const isWon = hasSelectedWinner && String(order.selected_vendor) === String(businessId);
+  
+  // Log the result of isWon calculation
+  console.log("isWon calculation:", { 
+    hasSelectedWinner, 
+    selected_vendor: String(order.selected_vendor), 
+    businessId: String(businessId),
+    isEqual: String(order.selected_vendor) === String(businessId),
+    isWon
+  });
+  
   // State for when tender is open for this vendor
   const isStillInTender = isInTender && !hasSelectedWinner;
   // State for when the vendor lost
   const isLost = isInTender && hasSelectedWinner && !isWon;
 
-  // Determine if the checkbox should be shown
-  const showCheckbox = isWon && orderStatus === 'accepted';
+  // Determine if the checkbox should be shown - simplified to just isWon
+  const showCheckbox = isWon;
+  
+  // Log the final result
+  console.log("Checkbox visibility:", { 
+    isWon, 
+    showCheckbox,
+    checkboxRendered: Boolean(showCheckbox)
+  });
 
   return (
     <div className={`order-card ${isRTL ? 'rtl' : 'ltr'}`}>

@@ -440,4 +440,21 @@
      padding: 6px; /* Reset padding for icon only */
      gap: 0; /* Remove gap */
   }
+}
+
+/* Delete Order Icon specific styles in row view */
+.delete-order-icon-row {
+  opacity: 0.6;
+  margin-right: 8px;
+  height: 32px; /* Smaller height for the row view */
+  width: 32px;
+}
+
+.delete-order-icon-row:hover {
+  opacity: 1;
+}
+
+html[dir="rtl"] .delete-order-icon-row {
+  margin-right: 0;
+  margin-left: 8px;
 } 

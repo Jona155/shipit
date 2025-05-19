@@ -36,7 +36,9 @@ const OrdersCards = ({
   onApproveTender,
   onDisapproveTender,
   businessSLA, // Pass this down if needed for late status
-  onViewTenderStatus
+  onViewTenderStatus,
+  onDeleteOrder, // New prop for delete functionality
+  isVendor // New prop to determine if user is a vendor
 }) => {
   const { t } = useTranslation();
 
@@ -127,6 +129,7 @@ const OrdersCards = ({
               isSelected={selectedOrders.includes(order._id)}
               onSelectOrder={onSelectOrder} 
               businessType={businessType}
+              businessId={businessId}
               activeTab={activeTab}
               // Add other handlers as needed by OrderRow actions
               onSendToTender={onSendToTender}
@@ -138,6 +141,8 @@ const OrdersCards = ({
               onUnassignOrder={onUnassignOrder}
               onReturnToOnTheirWay={onReturnToOnTheirWay}
               businessSLA={businessSLA}
+              onDeleteOrder={onDeleteOrder} // Pass delete handler
+              isVendor={isVendor} // Pass vendor flag
             />
           ))}
           {orders.length === 0 && (

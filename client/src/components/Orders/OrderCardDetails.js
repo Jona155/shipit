@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Phone, MapPin } from "lucide-react";
+import { Phone } from "lucide-react";
 
 // Helper function to generate navigation URL
 const navUrlFor = (addr) => {
@@ -72,15 +72,14 @@ const OrderCardDetails = ({ order, isRTL, businessType }) => {
           <div className="detail-value">
             {addressString ? (
               <div className="order-address-line">
-                {addressString}
                 <a
                   href={navUrlFor(addressString)}
-                  className="map-icon-link"
+                  className="address-link"
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label={t('navigate_to_address')}
                 >
-                  <MapPin className="map-icon" />
+                  {addressString}
                 </a>
               </div>
             ) : (

@@ -269,5 +269,14 @@
   "navigate_to_address": "נווט לכתובת",
   "order_is_late": "הזמנה חורגת מזמן",
   "unassigned": "לא משויך",
-  "order_time": "שעת הזמנה"
+  "order_time": "שעת הזמנה",
+  "tenderManagement": "ניהול מכרז",
+  "sendToTender": "שלח למכרז",
+  "selectVendors": "בחר ספקים",
+  
+  "deleteOrderTitle": "מחיקה של הזמנה {shortId}?",
+  "deleteOrderBody": "פעולה זו תסיר את ההזמנה מהתצוגה בלבד.",
+  "deleteOrderAction": "מחק הזמנה",
+  "cancelAction": "ביטול",
+  "deleteConfirmAction": "מחיקה"
 }

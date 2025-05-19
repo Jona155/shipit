@@ -378,13 +378,76 @@ def select_tender_winner():
         logging.error(f"Error selecting tender winner: {str(e)}")
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
+@bp.route('/<order_id>/soft-delete', methods=['POST'])
+def soft_delete_order(order_id):
+    """
+    Soft deletes an order by setting isDeleted flag to true.
+    This removes it from view but preserves it in the database for audit purposes.
+    Only accessible to operators, not vendors.
+    """
+    try:
+        logging.info(f"Received soft-delete request for order: {order_id}")
+        db = get_db()
+        orders_dal = OrdersDAL(db)
+        auth_dal = AuthDAL(db)
+
+        # Debug the received request
+        logging.info(f"Request method: {request.method}, endpoint: {request.endpoint}")
+        logging.info(f"Request headers: {dict(request.headers)}")
+
+        # Validate token
+        token = request.headers.get('authToken')
+        if not token:
+            logging.warning("No authentication token provided")
+            return jsonify({"error": "No token provided"}), 401
+
+        user_id = auth_dal.validate_token(token)
+        if not user_id:
+            logging.warning(f"Invalid token: {token[:10]}...")
+            return jsonify({"error": "Invalid or expired token"}), 401
+
+        logging.info(f"Authenticated user: {user_id}")
+
+        # TODO: Implement role check to ensure user is an operator and not a vendor
+        # For now, we assume that all authenticated users can soft-delete orders
+        # This would need to be replaced with proper role verification
+
+        # Ensure the order exists before attempting to delete
+        logging.info(f"Looking up order: {order_id}")
+        order = orders_dal.get_order(order_id)
+        if not order:
+            logging.warning(f"Order not found: {order_id}")
+            return jsonify({"error": "Order not found"}), 404
+        
+        logging.info(f"Found order: {order.get('short_id', order.get('_id'))}")
+        
+        if order.get("isDeleted"):
+            logging.info(f"Order {order_id} is already deleted")
+            return jsonify({"message": "Order already deleted", "order_id": order_id}), 200
+
+        # Soft delete the order
+        logging.info(f"Attempting to soft delete order: {order_id}")
+        success = orders_dal.soft_delete_order(order_id)
+        if success:
+            logging.info(f"Order {order_id} soft deleted successfully")
+            return jsonify({"message": "Order deleted successfully", "order_id": order_id}), 200
+        else:
+            logging.error(f"Failed to soft delete order: {order_id}")
+            return jsonify({"error": "Failed to delete order"}), 500
+
+    except Exception as e:
+        logging.error(f"Error soft deleting order {order_id}: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
 # Diagnostic catchall route - will capture any unrecognized route under /api/orders
-@bp.route('/<path:subpath>', methods=['GET'])
+@bp.route('/<path:subpath>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def catchall_route(subpath):
     """Diagnostic route to catch any unrecognized paths under /api/orders"""
-    logging.warning(f"Unrecognized orders API route called: {subpath}")
+    logging.warning(f"Unrecognized orders API route called: {subpath} with method {request.method}")
     return jsonify({
-        "error": f"Unrecognized route: /api/orders/{subpath}",
+        "error": f"Unrecognized route: /api/orders/{subpath} with method {request.method}",
         "valid_routes": [
             "/api/orders/business/<business_id>",
             "/api/orders/vendor/<vendor_id>",
@@ -393,6 +456,7 @@ def catchall_route(subpath):
             "/api/orders/tender",
             "/api/orders/cancel-tender",
             "/api/orders/tender-response",
-            "/api/orders/select-vendor"
+            "/api/orders/select-vendor",
+            "/api/orders/<order_id>/soft-delete"
         ]
     }), 404

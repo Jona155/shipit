@@ -16,18 +16,32 @@ class JSONEncoder(json.JSONEncoder):
             return o.isoformat()
         return json.JSONEncoder.default(self, o)
 
-@bp.route('/business/<business_id>')
+@bp.route('/business/<business_id>/')
 def get_business_users(business_id):
     try:
+        logging.info(f"Request for users in business: {business_id}")
         db = get_db()
         users_dal = UsersDAL(db)
         users = users_dal.get_business_users(business_id)
-        return json.dumps(users, cls=JSONEncoder), 200, {'Content-Type': 'application/json'}
+        logging.info(f"Found {len(users)} users")
+        
+        # Debug: Print the route we're handling
+        logging.info("Handling business users route for API")
+        
+        # Ensure explicit JSON content type and headers
+        response_data = json.dumps(users, cls=JSONEncoder)
+        
+        # Debug: Print response data (truncated)
+        logging.info(f"Responding with data (truncated): {response_data[:100]}...")
+        
+        # Return with explicit JSON MIME type
+        return response_data, 200, {'Content-Type': 'application/json'}
     except Exception as e:
-        logging.error(f"Unexpected error: {str(e)}")
+        logging.error(f"Unexpected error in get_business_users: {str(e)}")
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 @bp.route('/update/<user_id>', methods=['PUT'])
+@bp.route('/update/<user_id>/', methods=['PUT'])
 def update_user(user_id):
     try:
         db = get_db()
@@ -66,6 +80,7 @@ def update_user(user_id):
         }), 500
 
 @bp.route('/delete/<user_id>', methods=['DELETE'])
+@bp.route('/delete/<user_id>/', methods=['DELETE'])
 def delete_user(user_id):
     try:
         db = get_db()

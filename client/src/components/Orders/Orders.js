@@ -42,6 +42,9 @@ const Orders = () => {
   const [alertType, setAlertType] = useState('success');
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [businessSettings, setBusinessSettings] = useState(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState(null);
+  const [orderShortIdToDelete, setOrderShortIdToDelete] = useState('');
 
   // Ref to hold the latest orders for incremental polling
   const businessType = localStorage.getItem('currentBusinessType');
@@ -661,6 +664,61 @@ const Orders = () => {
   const handleApproveTender = (orderId) => handleTenderResponse(orderId, 'APPROVED');
   const handleDisapproveTender = (orderId) => handleTenderResponse(orderId, 'DISAPPROVED');
 
+  // Add handler for initiating delete process
+  const handleDeleteOrderClick = useCallback((orderId, shortId) => {
+    setOrderToDelete(orderId);
+    setOrderShortIdToDelete(shortId);
+    setShowDeleteConfirmation(true);
+  }, []);
+
+  // Add handler for confirming delete
+  const handleConfirmDelete = useCallback(async () => {
+    if (!orderToDelete) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      let apiBaseUrl = process.env.REACT_APP_API_URL || '';
+      apiBaseUrl = apiBaseUrl.replace(/[%\s]+$/, ''); // Clean URL
+
+      const response = await fetch(
+        `${apiBaseUrl}/api/orders/${orderToDelete}/soft-delete`,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'authToken': token 
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete order');
+      }
+
+      // Update local state - remove the deleted order
+      setOrders(prevOrders => prevOrders.filter(order => order._id !== orderToDelete));
+      
+      // Show success message
+      showAlertMessage(t('orderDeletedSuccess', 'Order deleted successfully'), 'success');
+    } catch (err) {
+      console.error('Error deleting order:', err);
+      showAlertMessage(err.message || t('orderDeleteError', 'Failed to delete order'), 'error');
+    } finally {
+      // Close the confirmation dialog
+      setShowDeleteConfirmation(false);
+      setOrderToDelete(null);
+      setOrderShortIdToDelete('');
+    }
+  }, [orderToDelete, t, showAlertMessage]);
+
+  // Add handler for cancelling delete
+  const handleCancelDelete = useCallback(() => {
+    setShowDeleteConfirmation(false);
+    setOrderToDelete(null);
+    setOrderShortIdToDelete('');
+  }, []);
+
   // During the initial load, show a full-page loader.
   // Once the orders are loaded, incremental updates happen seamlessly.
   if (initialLoad && loading) return <Loading size="fullscreen" />;
@@ -722,6 +780,8 @@ const Orders = () => {
             businessId={businessId}
             businessType={businessType}
             businessSLA={businessSettings?.sla}
+            onDeleteOrder={handleDeleteOrderClick}
+            isVendor={businessType === 'vendor'}
           />
         </div>
       )}
@@ -744,6 +804,8 @@ const Orders = () => {
             onBuildRoute={handleBuildRoute}
             onCancelBuildRoute={handleCancelBuildRoute}
             businessSLA={businessSettings?.sla}
+            onDeleteOrder={handleDeleteOrderClick}
+            isVendor={businessType === 'vendor'}
           />
           
           {/* Assign Courier Button for map view - only shown on the accepted tab */}
@@ -790,6 +852,34 @@ const Orders = () => {
         orderDetails={selectedOrderDetails}
         businessId={businessId}
       />
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmation && (
+        <div className="modal-overlay">
+          <div className="modal-container delete-confirm-modal">
+            <div className="modal-header">
+              {/* Replace {shortId} placeholder in the translation string with the actual value */}
+              <h3>{t('deleteOrderTitle').replace('{shortId}', orderShortIdToDelete)}</h3>
+            </div>
+            <div className="modal-body">
+              <p>{t('deleteOrderBody')}</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="cancel-button" 
+                onClick={handleCancelDelete}
+              >
+                {t('cancelAction')}
+              </button>
+              <button 
+                className="delete-button danger-button" 
+                onClick={handleConfirmDelete}
+              >
+                {t('deleteConfirmAction')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

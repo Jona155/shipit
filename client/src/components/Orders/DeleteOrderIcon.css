@@ -1,0 +1,33 @@
+.delete-order-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; /* Reserved space as per UX */
+  height: 44px; /* Clickable area height */
+  min-width: 32px; /* Ensure it takes up the reserved space */
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  border-radius: 50%; /* For hover background */
+  padding: 10px; /* Create space for the hover circle */
+}
+
+.delete-order-icon-wrapper svg {
+  width: 24px;
+  height: 24px;
+  color: currentColor; /* Inherit color for easier styling */
+}
+
+.delete-order-icon-wrapper:hover {
+  opacity: 1;
+  background-color: #FEE2E2; /* #FEE2E2 background per design */
+}
+
+.delete-order-icon-wrapper:hover svg {
+  color: #F04438; /* Icon fills #F04438 on hover */
+}
+
+/* RTL support - in case we need to adjust positioning for RTL layouts */
+html[dir="rtl"] .delete-order-icon-wrapper {
+  /* Any RTL-specific adjustments would go here */
+} 

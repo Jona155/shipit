@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { getOrderStatus } from './orderUtils';
 import SLATimer from './SLATimer';
 import OrderCardDetails from './OrderCardDetails';
+import DeleteOrderIcon from './DeleteOrderIcon';
 
 const OrderCard = ({
   order,
@@ -15,8 +16,10 @@ const OrderCard = ({
   onSendToTender,
   onCancelTender,
   onViewTenderStatus,
+  onDeleteOrder,
   isRTL,
-  businessSLA
+  businessSLA,
+  isVendor
 }) => {
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
@@ -31,6 +34,13 @@ const OrderCard = ({
     <div className={`order-card ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="order-card-header">
         <div className="order-id">
+          {!isVendor && (
+            <DeleteOrderIcon 
+              orderShortId={order.short_id || order._id} 
+              onClick={() => onDeleteOrder(order._id, order.short_id || order._id)} 
+              isVendor={isVendor}
+            />
+          )}
           {activeTab === 'accepted' && !order.in_tender && (
             <input
               type="checkbox"

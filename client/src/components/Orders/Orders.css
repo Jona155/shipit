@@ -420,3 +420,57 @@ button {
   align-items: center; /* Vertically center items */
   justify-content: space-between; /* Space out elements */
 }
+
+/* Delete confirmation modal */
+.delete-confirm-modal {
+  max-width: 400px; /* Smaller width for delete confirmation */
+}
+
+.delete-confirm-modal .modal-header h3 {
+  color: #111827;
+}
+
+.delete-confirm-modal .modal-body {
+  margin-bottom: 24px;
+}
+
+.delete-confirm-modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.delete-confirm-modal .cancel-button {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.delete-confirm-modal .cancel-button:hover {
+  background-color: #e5e7eb;
+}
+
+.delete-confirm-modal .delete-button {
+  background-color: #f04438;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.delete-confirm-modal .delete-button:hover {
+  background-color: #ef4444;
+}
+
+/* RTL support for the modal */
+html[dir="rtl"] .delete-confirm-modal .modal-footer {
+  flex-direction: row-reverse;
+}

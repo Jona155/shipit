@@ -11,7 +11,8 @@ class OrdersDAL:
     def get_business_orders(self, business_id, status='all', since=None):
         # Simplified match criteria, applies to all businesses
         match_criteria = {
-            "bid": business_id
+            "bid": business_id,
+            "isDeleted": {"$ne": True}  # Exclude soft-deleted orders
         }
 
         # Apply incremental fetch filter if 'since' is provided
@@ -53,9 +54,11 @@ class OrdersDAL:
         """
         Fetches orders for a vendor based on their ID appearing in the tender_scope.
         Filters out orders where a different vendor has been selected as the winner.
+        Filters out soft-deleted orders.
         Applies status and incremental fetching similar to get_business_orders.
         """
         # Base criteria: vendor must be in scope AND (no winner selected OR this vendor is the winner)
+        # AND order is not soft-deleted
         base_match = {
             "tender_scope": {
                 "$elemMatch": {"tender_bid": vendor_id}
@@ -64,7 +67,8 @@ class OrdersDAL:
                 {"selected_vendor": {"$exists": False}},
                 {"selected_vendor": None},
                 {"selected_vendor": vendor_id}
-            ]
+            ],
+            "isDeleted": {"$ne": True}  # Exclude soft-deleted orders
         }
 
         # Combine base criteria with status and incremental filters using $and
@@ -151,6 +155,52 @@ class OrdersDAL:
             formatted_orders.append(order)
 
         return formatted_orders
+
+    def soft_delete_order(self, order_id):
+        """
+        Soft deletes an order by setting isDeleted = True.
+        
+        Args:
+            order_id: The ID of the order to soft delete.
+            
+        Returns:
+            True if the order was successfully marked as deleted, False otherwise.
+        """
+        try:
+            # First try with the ID as-is (could be either string UUID or ObjectId)
+            logging.info(f"Attempting to soft delete order with ID: {order_id}")
+            
+            # Try looking for the order with both the direct ID and as a string ID
+            # This handles both UUID format IDs stored as strings and ObjectIds
+            order = self.db.orders.find_one({"$or": [{"_id": order_id}, {"short_id": order_id}]})
+            
+            if not order:
+                logging.warning(f"Order {order_id} not found for soft delete.")
+                return False
+                
+            # Now we know the actual ID to use
+            actual_id = order["_id"]
+            
+            result = self.db.orders.update_one(
+                {"_id": actual_id},
+                {"$set": {"isDeleted": True, "deletedAt": datetime.utcnow()}}
+            )
+            
+            if result.modified_count > 0:
+                logging.info(f"Order {order_id} soft deleted successfully.")
+                return True
+            else:
+                # This could mean the order was already marked as deleted
+                logging.warning(f"Soft delete for order {order_id} did not modify any document. It might already be marked as deleted.")
+                # Check if it's already deleted
+                order = self.db.orders.find_one({"_id": actual_id})
+                if order and order.get("isDeleted") == True:
+                    logging.info(f"Order {order_id} was already marked as deleted.")
+                    return True
+                return False
+        except Exception as e:
+            logging.error(f"Error soft deleting order {order_id}: {str(e)}")
+            return False
 
     def update_orders_status(self, order_ids, new_status, courier_id, courier_name):
         logging.info(f"Updating order status: status={new_status}, courier={courier_id} ({courier_name})")
@@ -404,14 +454,19 @@ class OrdersDAL:
         Fetch a single order by its ID.
         
         Args:
-            order_id: The ID of the order to fetch.
+            order_id: The ID of the order to fetch (can be _id or short_id).
             
         Returns:
             The order document or None if not found.
         """
-        order = self.db.orders.find_one({"_id": order_id})
+        # Try to find the order using either _id or short_id
+        logging.info(f"Looking for order with ID: {order_id}")
+        
+        # Create a query that looks for the order_id in multiple fields
+        order = self.db.orders.find_one({"$or": [{"_id": order_id}, {"short_id": order_id}]})
         
         if not order:
+            logging.warning(f"Order not found with ID: {order_id}")
             return None
             
         # Format the order for JSON serialization

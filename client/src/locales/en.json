@@ -273,5 +273,15 @@
   "navigate_to_address": "Navigate to address",
   "order_is_late": "Order is late",
   "unassigned": "Unassigned",
-  "order_time": "Order Time"
+  "order_time": "Order Time",
+
+  "tenderManagement": "Tender Management",
+  "sendToTender": "Send to Tender",
+  "selectVendors": "Select Vendors",
+  
+  "deleteOrderTitle": "Delete order {shortId}?",
+  "deleteOrderBody": "This removes the order from your view only.",
+  "deleteOrderAction": "Delete Order",
+  "cancelAction": "Cancel",
+  "deleteConfirmAction": "Delete"
 }
