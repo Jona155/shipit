@@ -8,6 +8,7 @@ import OrderActionIcons from './OrderActionIcons'; // Import new action icons co
 import { getStatusBarClass } from '../../utils/designTokens'; // Import helper
 import './OrdersList.css'; 
 import { getOrderStatus } from "./orderUtils";
+import { isOrderLate, formatDateForDisplay, correctServerTimestamp } from '../../utils/timeUtils';
 
 // Navigation URL function (keep here or move to utils)
 const navUrlFor = (addr) => {
@@ -59,17 +60,25 @@ const OrderRow = ({
   const addressString = typeof order.address === 'string' ? order.address : 'N/A'; 
   const phoneNumber = order.customer_phone_number || order.phone || order.customer_phone;
   const orderTimestamp = order.status?.[0]?.timestamp || order.creation_time || order.created_at;
+  // Apply timestamp correction for display
+  const correctedTimestamp = orderTimestamp ? correctServerTimestamp(orderTimestamp) : null;
   const courierName = order.courier_name;
   const isInTender = order.in_tender === true;
   const hasSelectedVendor = order.selected_vendor != null;
   
+  console.log('DEBUG - OrderRow timestamp data:', {
+    orderId,
+    orderTimestamp,
+    parsedDate: orderTimestamp ? new Date(orderTimestamp).toString() : null,
+    utcDate: orderTimestamp ? new Date(orderTimestamp).toUTCString() : null,
+    statusArray: order.status ? JSON.stringify(order.status) : null,
+    orderStatus
+  });
+  
   // --- Lateness Calculation (remains the same) ---
   let isLate = false;
   if (orderStatus === 'accepted' && businessSLA && orderTimestamp) {
-    const orderDate = new Date(orderTimestamp);
-    const slaMillis = businessSLA * 60 * 1000;
-    const deadline = new Date(orderDate.getTime() + slaMillis);
-    isLate = new Date() > deadline;
+    isLate = isOrderLate(orderTimestamp, businessSLA);
   }
   
   // --- Other State Checks (remains the same) ---
@@ -106,9 +115,9 @@ const OrderRow = ({
           order={order}
           onEditOrder={onEditOrder}
           onDeleteOrder={onDeleteOrder}
-          isVendor={isVendor}
+            isVendor={isVendor}
           className="order-row-actions"
-        />
+          />
         {showCheckbox && (
           <input
             type="checkbox"
@@ -163,8 +172,8 @@ const OrderRow = ({
            )
          )}
         <Clock className="time-icon" title={t('order_time', 'Order Time')} />
-        <span className="time-text" title={orderTimestamp ? new Date(orderTimestamp).toLocaleString() : ''}>
-          {orderTimestamp ? new Date(orderTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+        <span className="time-text" title={correctedTimestamp ? formatDateForDisplay(correctedTimestamp, 'Asia/Jerusalem', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}>
+          {correctedTimestamp ? formatDateForDisplay(correctedTimestamp, 'Asia/Jerusalem', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
         </span>
         {isLate && <AlertTriangle className="late-icon" title={t('order_is_late')} />}
       </div>

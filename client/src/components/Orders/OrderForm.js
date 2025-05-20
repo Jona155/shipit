@@ -5,6 +5,7 @@ import './OrderForm.css';
 import debounce from 'lodash/debounce';
 import Loading from '../common/Loading';
 import '../common/styles.css';
+import { generateCurrentUTCTimestamp } from '../../utils/timeUtils';
 
 const libraries = ['places'];
 
@@ -151,7 +152,17 @@ const OrderForm = ({
       }
     } else {
       // Create new order
-      const timestamp = new Date().toISOString();
+      const timestamp = generateCurrentUTCTimestamp();
+      
+      console.log('DEBUG - New order timestamp details:', {
+        timestamp,
+        parsed: new Date(timestamp).toString(),
+        utc: new Date(timestamp).toUTCString(),
+        rawDate: new Date(),
+        rawUTC: new Date().toUTCString(),
+        timezoneOffset: new Date().getTimezoneOffset(),
+        timezoneName: Intl.DateTimeFormat().resolvedOptions().timeZone
+      });
       
       // Build final order object for submission
       const newOrder = {
@@ -166,6 +177,12 @@ const OrderForm = ({
         ],
         short_id: Math.random().toString(36).substring(2, 6).toUpperCase()
       };
+      
+      console.log('DEBUG - Submitting new order with timestamps:', {
+        timestamp: newOrder.timestamp,
+        order_time: newOrder.order_time,
+        status_timestamp: newOrder.status[0].timestamp
+      });
       
       onSubmit(newOrder);
     }

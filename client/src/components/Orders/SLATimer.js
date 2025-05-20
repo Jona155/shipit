@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import './SLATimer.css';
+import { formatDateForDisplay, correctServerTimestamp } from '../../utils/timeUtils';
 
 const SLATimer = ({ orderTime, slaMinutes }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -15,35 +16,40 @@ const SLATimer = ({ orderTime, slaMinutes }) => {
   const isHebrew = i18n.language === 'he';
 
   useEffect(() => {
-    if (!orderTime || !slaMinutes) return;
+    if (!orderTime || slaMinutes === undefined || slaMinutes === null) return;
 
-    // Explicitly handle the timestamp as UTC and add 3 hours for Israel timezone
-    const getAdjustedTimestamp = (timestamp) => {
-      // Create a date object from the timestamp (assuming it's in UTC)
-      const date = new Date(timestamp);
-      
-      return date;
-    };
+    console.log('DEBUG - SLATimer initialization:', {
+      orderTime,
+      slaMinutes,
+      parsedOrderTime: new Date(orderTime).toString(),
+      utcOrderTime: new Date(orderTime).toUTCString(),
+      currentTime: new Date().toString(),
+      utcCurrentTime: new Date().toUTCString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    });
 
-    const orderDate = getAdjustedTimestamp(orderTime);
+    // Apply timestamp correction if needed
+    const correctedOrderTime = correctServerTimestamp(orderTime);
+    console.log('DEBUG - SLATimer using corrected timestamp:', {
+      original: orderTime,
+      corrected: correctedOrderTime,
+      originalParsed: new Date(orderTime).toUTCString(),
+      correctedParsed: new Date(correctedOrderTime).toUTCString()
+    });
+
+    const orderDate_utc = new Date(correctedOrderTime); // Use corrected timestamp
     const slaMilliseconds = slaMinutes * 60 * 1000;
     
     const calculateTimeElapsed = () => {
-      // Current time in local timezone
-      const now = new Date();
-      
-      // Calculate elapsed time
-      const elapsed = now - orderDate;
-  
-      
+      const now_utc = new Date(); // Current UTC time
+      const elapsed = now_utc.getTime() - orderDate_utc.getTime(); // Difference in milliseconds
       return elapsed;
     };
 
     const updateTimer = () => {
       const elapsed = calculateTimeElapsed();
-      const elapsedPercent = (elapsed / slaMilliseconds) * 100;
+      const elapsedPercent = slaMilliseconds > 0 ? (elapsed / slaMilliseconds) * 100 : 0;
       
-      // Update the elapsed time display with translations
       const elapsedMinutes = Math.floor(elapsed / (60 * 1000));
       
       let display;
@@ -51,28 +57,19 @@ const SLATimer = ({ orderTime, slaMinutes }) => {
       
       if (elapsedMinutes >= 60) {
         const hours = Math.floor(elapsedMinutes / 60);
-        
-        // Format based on language
         if (hours >= 10) {
-          display = isHebrew 
-            ? `${hours}ש׳` 
-            : `${hours}h`;
+          display = isHebrew ? `${hours}ש׳` : `${hours}h`;
           textLengthClass = 'medium';
         } else {
-          display = isHebrew 
-            ? `${hours}ש׳` 
-            : `${hours}h`;
+          display = isHebrew ? `${hours}ש׳` : `${hours}h`;
           textLengthClass = 'short';
         }
       } else {
-        // Format based on language
         if (elapsedMinutes >= 100) {
-          display = `${elapsedMinutes}`; // Just the number for 100+ minutes
+          display = `${elapsedMinutes}`;
           textLengthClass = 'medium';
         } else {
-          display = isHebrew 
-            ? `${elapsedMinutes}ד׳` 
-            : `${elapsedMinutes}m`;
+          display = isHebrew ? `${elapsedMinutes}ד׳` : `${elapsedMinutes}m`;
           textLengthClass = 'short';
         }
       }
@@ -81,22 +78,17 @@ const SLATimer = ({ orderTime, slaMinutes }) => {
       setTextLength(textLengthClass);
       setElapsedTime(elapsedPercent);
       
-      // Update color based on elapsed percentage
       if (elapsedPercent > 100) {
-        setProgressColor('#FF5252'); // Red for SLA breach
+        setProgressColor('#FF5252'); 
       } else if (elapsedPercent > 60) {
-        setProgressColor('#FFA726'); // Orange for approaching SLA
+        setProgressColor('#FFA726'); 
       } else {
-        setProgressColor('#3a86ff'); // Blue for good timing
+        setProgressColor('#3a86ff'); 
       }
     };
 
-    // Initial update
     updateTimer();
-    
-    // Set interval to update every 15 seconds for more accurate display
     const intervalId = setInterval(updateTimer, 15000);
-    
     return () => clearInterval(intervalId);
   }, [orderTime, slaMinutes, isHebrew]);
   
@@ -107,7 +99,7 @@ const SLATimer = ({ orderTime, slaMinutes }) => {
     <div className={`sla-timer ${textLength} ${isHebrew ? 'rtl' : 'ltr'}`}>
       <div style={{ width: size, height: size }}>
         <CircularProgressbar
-          value={Math.min(elapsedTime, 100)}
+          value={Math.min(Math.max(elapsedTime, 0), 100)} // Ensure value is between 0 and 100
           text={elapsedDisplay}
           strokeWidth={6}
           styles={buildStyles({

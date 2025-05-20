@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import OrderCardDetails from './OrderCardDetails';
 import SLATimer from './SLATimer';
 import { getOrderStatus } from './orderUtils';
+import { formatDateForDisplay, correctServerTimestamp } from '../../utils/timeUtils';
 
 const VendorOrderCard = ({ 
   order, 
@@ -17,6 +18,7 @@ const VendorOrderCard = ({
   const { t } = useTranslation();
   const orderStatus = getOrderStatus(order);
   const orderTime = order.status?.[order.status.length - 1]?.timestamp || order.creation_time || order.created_at;
+  const correctedOrderTime = orderTime ? correctServerTimestamp(orderTime) : null;
 
 
   // --- State Determination ---
@@ -94,6 +96,11 @@ const VendorOrderCard = ({
                <span>{t(orderStatus)}</span>
             )}
           </div>
+          {orderTime && (
+            <div className="order-time">
+              {formatDateForDisplay(correctedOrderTime, 'Asia/Jerusalem', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          )}
         </div>
       </div>
 

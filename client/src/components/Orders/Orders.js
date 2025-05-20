@@ -11,6 +11,7 @@ import TenderStatusModal from './TenderStatusModal';
 import Loading from '../common/Loading';
 import { useTranslation } from 'react-i18next';
 import { getOrderStatus } from "./orderUtils";
+import { generateCurrentUTCTimestamp } from '../../utils/timeUtils';
 import axios from 'axios';
 import '../common/styles.css';
 
@@ -97,6 +98,26 @@ const Orders = () => {
         let data;
         try {
           data = await response.json();
+          
+          // Debug the first few orders to see their timestamp format
+          if (data && data.length > 0) {
+            console.log("DEBUG - First few fetched orders:", data.slice(0, 3).map(order => ({
+              id: order._id || order.id,
+              shortId: order.short_id,
+              timestamp: order.timestamp,
+              order_time: order.order_time,
+              created_at: order.created_at,
+              status: order.status ? 
+                order.status.map(s => ({ 
+                  value: s.value, 
+                  timestamp: s.timestamp,
+                  parsed: s.timestamp ? new Date(s.timestamp).toString() : null 
+                })) : null,
+              parsedTimestamp: order.timestamp ? new Date(order.timestamp).toString() : null,
+              parsedCreatedAt: order.created_at ? new Date(order.created_at).toString() : null
+            })));
+          }
+          
         } catch (jsonError) {
           // Get the raw text to see what we actually received
           const textResponse = await response.text();
@@ -261,7 +282,7 @@ const Orders = () => {
               status: [
                 {
                   value: 'ASSIGNED',
-                  timestamp: new Date().toISOString(),
+                  timestamp: generateCurrentUTCTimestamp(),
                   courier_id: updatedOrder.courier_id,
                   courier_name: updatedOrder.courier_name
                 },
@@ -398,6 +419,12 @@ const Orders = () => {
       return;
     }
 
+    console.log('DEBUG - Sending new order to API:', {
+      timestamp: newOrder.timestamp,
+      order_time: newOrder.order_time,
+      status: newOrder.status
+    });
+
     try {
       // Attach business ID and source
       newOrder.bid = businessId;
@@ -414,6 +441,15 @@ const Orders = () => {
       }
 
       const createdOrder = await response.json();
+      
+      console.log('DEBUG - API created order with timestamps:', {
+        createdOrderId: createdOrder._id || createdOrder.id,
+        timestamp: createdOrder.timestamp,
+        order_time: createdOrder.order_time,
+        status: createdOrder.status ? JSON.stringify(createdOrder.status) : null,
+        created_at: createdOrder.created_at
+      });
+      
       // Update local state
       setOrders(prev => [...prev, createdOrder]);
       setShowOrderForm(false);

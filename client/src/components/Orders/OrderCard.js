@@ -4,6 +4,7 @@ import { getOrderStatus } from './orderUtils';
 import SLATimer from './SLATimer';
 import OrderCardDetails from './OrderCardDetails';
 import OrderActionIcons from './OrderActionIcons';
+import { formatDateForDisplay, correctServerTimestamp } from '../../utils/timeUtils';
 
 const OrderCard = ({
   order,
@@ -26,25 +27,24 @@ const OrderCard = ({
   const orderStatus = getOrderStatus(order);
   
   const orderTime = order.status?.[order.status.length - 1]?.timestamp || order.creation_time || order.created_at;
+  const correctedOrderTime = orderTime ? correctServerTimestamp(orderTime) : null;
 
   const isAssignable = orderStatus === 'accepted' && !order.in_tender;
   const isInTender = order.in_tender === true;
   const hasSelectedWinner = order.selected_vendor != null;
-  
-  // Determine if user can edit the order (same visibility rules as delete, but for vendors it's always false)
-  const canEditOrder = !isVendor;
 
   return (
     <div className={`order-card ${isRTL ? 'rtl' : 'ltr'}`}>
       <div className="order-card-header">
         <div className="order-id">
-          <OrderActionIcons
-            order={order}
-            onEditOrder={onEditOrder}
-            onDeleteOrder={onDeleteOrder}
-            isVendor={isVendor}
-            className="order-card-actions"
-          />
+          {!isVendor && (
+            <OrderActionIcons
+              order={order}
+              onEditOrder={onEditOrder}
+              onDeleteOrder={onDeleteOrder}
+              isVendor={isVendor}
+            />
+          )}
           {activeTab === 'accepted' && !order.in_tender && (
             <input
               type="checkbox"
@@ -59,6 +59,11 @@ const OrderCard = ({
           {businessSLA && orderTime && (
             <div className="timer-container">
               <SLATimer orderTime={orderTime} slaMinutes={businessSLA} />
+            </div>
+          )}
+          {orderTime && (
+            <div className="order-time">
+              {formatDateForDisplay(correctedOrderTime, 'Asia/Jerusalem', { hour: '2-digit', minute: '2-digit' })}
             </div>
           )}
           <div className={`order-status status-${orderStatus}`}>
