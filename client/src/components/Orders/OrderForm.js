@@ -189,7 +189,6 @@ const OrderForm = ({
               value={orderData.customer_name}
               onChange={handleChange}
               placeholder={t('customer_name')}
-              required
               className="form-input"
           />
           <input
@@ -198,7 +197,6 @@ const OrderForm = ({
               value={orderData.customer_phone_number}
               onChange={handleChange}
               placeholder={t('customer_phone')}
-              required
               className="form-input"
           />
           <Autocomplete
@@ -238,7 +236,6 @@ const OrderForm = ({
               value={orderData.amount}
               onChange={handleChange}
               placeholder={t('order_amount')}
-              required
               className="form-input"
           />
           <textarea
