@@ -76,6 +76,7 @@ const Users = () => {
   const addUser = async (user) => {
     setIsLoading(true);
     try {
+      console.log("Adding new user:", user);
       const response = await fetch(`${API_BASE_URL}/api/users/add/`, {
         method: 'POST',
         headers: {
@@ -92,19 +93,78 @@ const Users = () => {
       }
   
       const data = await response.json();
+      console.log("User created with ID:", data.userId);
       
-      // Create processed user object with proper structure
-      const newUser = {
-        ...user,
-        uid: data.userId,
-        type: user.type,
-        isCurrentlyOnShift: user.type === 'messenger' ? user.isCurrentlyOnShift : false
-      };
+      // After creating the user, fetch the complete user data to ensure we have the correct structure
+      try {
+        // Wait a moment for the server to complete processing
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Fetch the complete business users list to get the proper structure
+        const usersResponse = await fetch(`${API_BASE_URL}/api/users/business/${businessId}/`);
+        if (!usersResponse.ok) {
+          throw new Error("Failed to fetch updated user list");
+        }
+        
+        const usersData = await usersResponse.json();
+        console.log("Fetched updated user list");
+        
+        // Find the newly created user in the response
+        const newUserData = usersData.find(u => u.uid === data.userId);
+        
+        if (newUserData) {
+          console.log("Found newly created user in response:", newUserData);
+          // Process the data to properly map isCurrentlyOnShift
+          const isMessenger = newUserData.profiles && newUserData.profiles.messenger;
+          const newUser = {
+            ...newUserData,
+            type: isMessenger ? 'messenger' : 'dispatcher',
+            isCurrentlyOnShift: isMessenger ? newUserData.profiles.messenger.isCurrentlyOnShift : false
+          };
+          
+          // Update the users list with the complete data
+          setUsers([...users, newUser]);
+        } else {
+          console.log("User created but not found in updated list, using partial data");
+          // Fall back to creating a simplified user object if we can't find it
+          const newUser = {
+            ...user,
+            uid: data.userId,
+            type: user.type,
+            isCurrentlyOnShift: user.type === 'messenger' ? user.isCurrentlyOnShift : false,
+            profiles: {
+              [user.type]: {
+                isCurrentlyOnShift: user.type === 'messenger' ? user.isCurrentlyOnShift : false,
+                isCurrentlyAvailable: user.type === 'messenger' ? user.isCurrentlyOnShift : false,
+                isWhileMission: false
+              }
+            }
+          };
+          setUsers([...users, newUser]);
+        }
+      } catch (fetchErr) {
+        console.error("Error fetching complete user data:", fetchErr);
+        // Fall back to creating a simplified user object with the profiles structure
+        const newUser = {
+          ...user,
+          uid: data.userId,
+          type: user.type,
+          isCurrentlyOnShift: user.type === 'messenger' ? user.isCurrentlyOnShift : false,
+          profiles: {
+            [user.type]: {
+              isCurrentlyOnShift: user.type === 'messenger' ? user.isCurrentlyOnShift : false,
+              isCurrentlyAvailable: user.type === 'messenger' ? user.isCurrentlyOnShift : false,
+              isWhileMission: false
+            }
+          }
+        };
+        setUsers([...users, newUser]);
+      }
       
-      setUsers([...users, newUser]);
       setIsFormVisible(false);
       setError(null);
     } catch (err) {
+      console.error("Error adding user:", err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -113,10 +173,13 @@ const Users = () => {
 
   const updateUser = async (updatedUser) => {
     try {
+      console.log("Updating user:", updatedUser);
       // Prepare user data for API
       const userForApi = {
         ...updatedUser,
       };
+      
+      console.log("Sending to API:", JSON.stringify(userForApi));
       
       const response = await fetch(`${API_BASE_URL}/api/users/update/${updatedUser.uid}/`, {
         method: 'PUT',
@@ -126,7 +189,28 @@ const Users = () => {
         body: JSON.stringify(userForApi),
       });
 
-      const responseData = await response.json();
+      // Check response status and log it
+      console.log("Response status:", response.status, response.statusText);
+      
+      // Check if there's any content in the response
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Invalid content type or empty response from server");
+        throw new Error("Server returned an invalid or empty response");
+      }
+
+      // Try to parse the response
+      const responseText = await response.text();
+      console.log("Response text:", responseText);
+      
+      // If the response is empty, handle it gracefully
+      if (!responseText.trim()) {
+        console.error("Empty response from server");
+        throw new Error("Server returned an empty response");
+      }
+      
+      const responseData = JSON.parse(responseText);
+      console.log("Parsed response:", responseData);
       
       if (!response.ok) {
         throw new Error(responseData.error || t('failed_to_update_user'));
@@ -139,7 +223,7 @@ const Users = () => {
       return true;
     } catch (err) {
       console.error(t('error_updating_user'), err);
-      setError(err.message);
+      setError(`${t('error_updating_user')}: ${err.message}`);
       return false;
     }
   };
@@ -166,12 +250,15 @@ const Users = () => {
 
   const toggleAvailability = async (userId) => {
     try {
+      console.log("Toggling availability for user ID:", userId);
       const user = users.find(u => u.uid === userId);
       if (!user || user.type !== 'messenger') {
         throw new Error(t('invalid_user_or_not_messenger'));
       }
       
+      console.log("Current user data:", user);
       const newShiftStatus = !user.isCurrentlyOnShift;
+      console.log("Setting new shift status to:", newShiftStatus);
       
       // Prepare an updated user with the modified shift status
       const updatedUser = { 
@@ -188,9 +275,12 @@ const Users = () => {
         }
       };
       
+      console.log("Built updatedUser object:", updatedUser);
+      
       const success = await updateUser(updatedUser);
       
       if (success) {
+        console.log("Successfully updated user shift status");
         // If updateUser succeeded but didn't update our state (timing issue),
         // manually update the user's status in the local state
         setUsers(prev => prev.map(u => {

@@ -48,31 +48,41 @@ def update_user(user_id):
         users_dal = UsersDAL(db)
         data = request.json
         
+        # Add detailed logging
+        logging.info(f"Updating user {user_id} with data: {json.dumps(data)}")
+        
         # Check if user exists before attempting update
         user = users_dal.get_user(user_id)
         if not user:
+            logging.error(f"User not found: {user_id}")
             return jsonify({"error": "User not found", "userId": user_id}), 404
             
         # Validate required fields based on update type
         if data.get('type') == 'messenger' and 'isCurrentlyOnShift' in data:
             # For shift status updates, validate profilesUpdate if provided
             if 'profilesUpdate' in data and 'messenger' not in data['profilesUpdate']:
+                logging.error(f"Missing messenger profile in profilesUpdate: {json.dumps(data)}")
                 return jsonify({"error": "Missing messenger profile in profilesUpdate"}), 400
         
         # Perform the update
+        logging.info(f"Calling users_dal.update_user for {user_id}")
         success = users_dal.update_user(user_id, data)
         
         if success:
             # Return the updated user data
             updated_user = users_dal.get_user(user_id)
+            logging.info(f"User updated successfully: {user_id}")
             return jsonify({
                 "message": "User updated successfully",
                 "user": json.loads(json.dumps(updated_user, cls=JSONEncoder))
             }), 200
         else:
+            logging.info(f"No changes made to user: {user_id}")
             return jsonify({"error": "No changes were made", "userId": user_id}), 304
     except Exception as e:
-        logging.error(f"Error updating user: {str(e)}")
+        logging.error(f"Error updating user {user_id}: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
         return jsonify({
             "error": f"An error occurred while updating the user",
             "details": str(e),
@@ -92,6 +102,7 @@ def delete_user(user_id):
         return jsonify({"error": "An error occurred while deleting the user"}), 500
 
 @bp.route('/add', methods=['POST'])
+@bp.route('/add/', methods=['POST'])
 def add_user():
     try:
         db = get_db()

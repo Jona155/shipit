@@ -4,11 +4,16 @@ import './UserForm.css';
 
 const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift }) => {
   const { t, i18n } = useTranslation();
+  
+  // Set initial state - for messenger type, default to on shift (matching backend behavior)
+  const initialType = defaultType || 'messenger';
+  const initialShiftStatus = initialType === 'messenger' ? (defaultOnShift !== undefined ? defaultOnShift : true) : false;
+  
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
-    type: defaultType || 'messenger',
-    isCurrentlyOnShift: defaultOnShift || false,
+    type: initialType,
+    isCurrentlyOnShift: initialShiftStatus,
     username: '',
     password: ''
   });
@@ -17,11 +22,15 @@ const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift 
     if (initialData) {
       setFormData(initialData);
     } else {
+      // When type changes, update isCurrentlyOnShift accordingly
+      const type = defaultType || 'messenger';
+      const shiftStatus = type === 'messenger' ? (defaultOnShift !== undefined ? defaultOnShift : true) : false;
+      
       setFormData({
         name: '',
         phoneNumber: '',
-        type: defaultType || 'messenger',
-        isCurrentlyOnShift: defaultOnShift || false,
+        type,
+        isCurrentlyOnShift: shiftStatus,
         username: '',
         password: ''
       });
@@ -30,10 +39,24 @@ const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift 
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ 
-      ...formData, 
-      [name]: type === 'checkbox' ? checked : value 
-    });
+    
+    // If user type changes, update shift status appropriately
+    if (name === 'type') {
+      const newType = value;
+      const newShiftStatus = newType === 'messenger' ? 
+        (formData.isCurrentlyOnShift !== undefined ? formData.isCurrentlyOnShift : true) : false;
+      
+      setFormData({
+        ...formData,
+        [name]: value,
+        isCurrentlyOnShift: newShiftStatus
+      });
+    } else {
+      setFormData({ 
+        ...formData, 
+        [name]: type === 'checkbox' ? checked : value 
+      });
+    }
   };
 
   const handleSubmit = (e) => {
@@ -55,7 +78,7 @@ const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift 
           <h3 className="section-title">{t('basic_info')}</h3>
           
           <div className="form-field">
-            <label htmlFor="name">{t('user_name')}</label>
+            <label htmlFor="name">{t('user_name')}<span className="required">*</span></label>
             <input
               id="name"
               type="text"
@@ -71,7 +94,7 @@ const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift 
           </div>
           
           <div className="form-field">
-            <label htmlFor="phoneNumber">{t('user_phone')}</label>
+            <label htmlFor="phoneNumber">{t('user_phone')}<span className="required">*</span></label>
             <input
               id="phoneNumber"
               type="tel"
@@ -87,7 +110,7 @@ const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift 
           </div>
           
           <div className="form-field">
-            <label htmlFor="type">{t('user_type')}</label>
+            <label htmlFor="type">{t('user_type')}<span className="required">*</span></label>
             <select
               id="type"
               name="type"
@@ -142,9 +165,8 @@ const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift 
                 value={formData.username}
                 onChange={handleChange}
                 placeholder={t('user_username_placeholder')}
-                required
                 className="form-input"
-                aria-required="true"
+                aria-required="false"
                 aria-label={t('username_aria')}
               />
             </div>
@@ -158,9 +180,8 @@ const UserForm = ({ onSubmit, initialData, onClose, defaultType, defaultOnShift 
                 value={formData.password}
                 onChange={handleChange}
                 placeholder={t('user_password_placeholder')}
-                required
                 className="form-input"
-                aria-required="true"
+                aria-required="false"
                 aria-label={t('password_aria')}
               />
             </div>

@@ -55,6 +55,7 @@
 
   "user_name_placeholder": "Name",
   "user_email_placeholder": "Email",
+  "user_phone_placeholder": "Phone Number",
   "user_role_courier": "Courier",
   "user_role_dispatcher": "Dispatcher",
   "update_user": "Update User",
@@ -165,6 +166,8 @@
   "missing_order_data": "Order {{id}} (data not available)",
   "no_active_delivery_groups": "No active delivery groups",
   "no_delivery_groups_found_for_search": "No delivery groups found for: '{{search}}'",
+  "no_orders_found": "No orders found",
+  "no_orders_found_for_search": "No orders found matching: '{{search}}'",
   "unknown_courier": "Unknown Courier",
   "expand": "Expand",
   "collapse": "Collapse",

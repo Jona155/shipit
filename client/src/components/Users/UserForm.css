@@ -49,6 +49,11 @@
   font-weight: 500;
 }
 
+.form-field .required {
+  color: #e53935;
+  margin-left: 3px;
+}
+
 .form-input, .form-select {
   padding: 10px;
   border: 1px solid #ddd;
