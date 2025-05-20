@@ -165,4 +165,29 @@ html[lang="en"] .leaflet-popup-content {
 /* RTL support */
 [dir="rtl"] .popup-actions {
   flex-direction: row-reverse;
+}
+
+.orders-map-container {
+  position: relative;
+  height: calc(100vh - 200px);
+  width: 100%;
+}
+
+/* Reuse the same empty state styling */
+.orders-map-container .no-orders-message {
+  text-align: center;
+  padding: 32px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 16px 0;
+  color: #666;
+  font-style: italic;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 400px;
+  z-index: 1000;
 } 
