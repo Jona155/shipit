@@ -74,7 +74,7 @@ const OrderCardDetails = ({ order, isRTL, businessType }) => {
               <div className="order-address-line">
                 <a
                   href={navUrlFor(addressString)}
-                  className="address-link"
+                  className="address-text clickable"
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label={t('navigate_to_address')}

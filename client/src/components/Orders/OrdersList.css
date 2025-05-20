@@ -500,4 +500,25 @@ html[dir="rtl"] .delete-order-icon-row {
   margin: 16px 0;
   color: #666;
   font-style: italic;
+}
+
+/* Add the following CSS rules after the .address-text class */
+
+.address-text.clickable {
+  color: #3a86ff;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s, text-decoration 0.2s;
+  display: block;
+  width: 100%;
+}
+
+.address-text.clickable:hover {
+  color: #1a56ff;
+  text-decoration: underline;
+}
+
+/* Fix for RTL */
+.rtl .address-text.clickable {
+  text-align: right;
 } 

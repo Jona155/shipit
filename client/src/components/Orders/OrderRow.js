@@ -136,15 +136,23 @@ const OrderRow = ({
         <span className="order-row-id" title={orderId} id={`order-id-${orderId}`}>{orderId}</span>
       </div>
 
-      {/* Column 2: Customer & Address (remains the same) */}
+      {/* Column 2: Customer & Address */}
       <div className="order-col col-customer">
         <div className="customer-name" title={customerName}>{customerName}</div>
         <div className="address-line">
-          <span className="address-text" title={addressString}>{addressString}</span>
-          {addressString !== 'N/A' && (
-            <a href={navUrlFor(addressString)} className="map-icon-link" target="_blank" rel="noopener noreferrer" aria-label={t('navigate_to_address')} title={t('navigate_to_address')}>
-              <MapPin className="map-icon" />
+          {addressString !== 'N/A' ? (
+            <a 
+              href={navUrlFor(addressString)} 
+              className="address-text clickable" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              aria-label={t('navigate_to_address')} 
+              title={t('navigate_to_address')}
+            >
+              {addressString}
             </a>
+          ) : (
+            <span className="address-text">{addressString}</span>
           )}
         </div>
         {phoneNumber && (
